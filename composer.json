@@ -1,0 +1,15 @@
+{
+    "name": "moonpluto/plateforme-events",
+    "description": "ls",
+    "autoload": {
+        "psr-4": {
+            "Moonpluto\\PlateformeEvents\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "cat composer.json"
+        }
+    ],
+    "require": {}
+}
