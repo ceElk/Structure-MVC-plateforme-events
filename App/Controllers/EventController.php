@@ -2,85 +2,311 @@
 
 namespace App\Controllers;
 
-use App\Controllers\Controller;
 use App\Models\Event;
-use App\Models\Category;
+use App\Entities\EventEntity;
 
 class EventController extends Controller
 {
-    /**
-     * Liste des événements avec filtres
-     * URL ex:
-     * ?controller=event&action=list
-     * ?controller=event&action=list&type=atelier
-     * ?controller=event&action=list&type=evenement
-     * ?controller=event&action=list&type=atelier&category=1
-     */
-    public function list(): void
+    // ============================================================
+    // LISTE DES ÉVÉNEMENTS
+    // ============================================================
+    public function index(): void
     {
-        $eventModel = new Event();
-        $categoryModel = new Category();
-
-        // ✅ Paramètres de filtre
-        $type = $_GET['type'] ?? null; // 'atelier' ou 'evenement'
+        $model = new Event();
+        
+        // ✅ Récupère le paramètre category de l'URL
         $categoryId = isset($_GET['category']) ? (int)$_GET['category'] : null;
-        $filter = $_GET['filter'] ?? null;
-
-        // ✅ Sécurité sur type
-        if (!in_array($type, [null, 'atelier', 'evenement'], true)) {
-            $type = null;
+        
+        // ✅ Si une catégorie est spécifiée, filtre par catégorie
+        if ($categoryId) {
+            $evenements = $model->getByTypeAndCategory('evenement', $categoryId);
+        } else {
+            // Sinon, affiche TOUS les événements
+            $evenements = $model->getAllByType('evenement');
         }
-
-        // ✅ Events filtrés
-        $events = $eventModel->getFilteredEvents($type, $categoryId, $filter);
-
-        // ✅ Catégories (filtre)
+        
+        // ✅ Charge les catégories pour le filtre
+        $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
-        // ✅ Titre page
-        $pageTitle = 'Tous les événements';
-        if ($type === 'atelier') {
-            $pageTitle = 'Ateliers';
-        } elseif ($type === 'evenement') {
-            $pageTitle = 'Événements';
-        }
-
-        $this->render('event/list', [
-            'title' => $pageTitle . ' - EventHub',
-            'page' => 'events',
-            'events' => $events,              // tableau de EventEntity
+        $this->render('event/index', [
+            'title' => $categoryId ? 'Événements - Filtrés' : 'Tous les événements',
+            'evenements' => $evenements,
             'categories' => $categories,
-            'currentType' => $type,
-            'currentCategory' => $categoryId,
-            'pageTitle' => $pageTitle
+            'selectedCategory' => $categoryId
         ]);
     }
 
-    /**
-     * Détail d'un événement
-     * URL: ?controller=event&action=detail&id=2
-     *
-     * Ton Router envoie automatiquement l'id en paramètre si présent,
-     * donc on utilise detail(int $id)
-     */
-    public function detail(int $id): void
+    // ============================================================
+    // DÉTAIL D'UN ÉVÉNEMENT
+    // ============================================================
+    public function show(int $id): void
     {
-        $eventModel = new Event();
+        $model = new Event();
+        $evenement = $model->getById($id);
 
-        $event = $eventModel->findById((int)$id);
-
-        if (!$event) {
+        if (!$evenement || $evenement->getType() !== 'evenement') {
             $this->setFlash('error', 'Événement introuvable.');
-            $this->redirect('home', 'index');
+            $this->redirect('event', 'index');
         }
 
         // ✅ Incrémenter le compteur de vues
-        $eventModel->incrementViews((int)$id);
+        $model->incrementViews($id);
 
-        $this->render('event/detail', [
-            'title' => htmlspecialchars($event->getTitle() ?? '') . ' - EventHub',
-            'page' => 'event-detail',
-            'event' => $event // EventEntity
+        $this->render('event/show', [
+            'title' => $evenement->getTitle() ?? 'Événement',
+            'evenement' => $evenement
         ]);
+    }
+
+    // ============================================================
+    // CRÉER UN ÉVÉNEMENT
+    // ============================================================
+    public function create(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $title = trim($_POST['title'] ?? '');
+            $location = trim($_POST['location'] ?? '');
+
+            $dateStart = !empty($_POST['date_start'])
+                ? str_replace('T', ' ', $_POST['date_start']) . ':00'
+                : null;
+
+            $dateEnd = !empty($_POST['date_end'])
+                ? str_replace('T', ' ', $_POST['date_end']) . ':00'
+                : null;
+
+            if ($title === '' || $location === '' || $dateStart === null) {
+                $this->setFlash('error', 'Titre, lieu et date de début obligatoires.');
+                $this->redirect('event', 'create');
+            }
+
+            // slug
+            $slug = strtolower(trim(preg_replace(
+                '/[^A-Za-z0-9-]+/',
+                '-',
+                iconv('UTF-8', 'ASCII//TRANSLIT', $title)
+            )));
+            $slug = trim($slug, '-');
+
+            // upload (optionnel)
+            $uploadedPath = $this->uploadImage('image_file');
+
+            $evenement = new EventEntity();
+            $evenement
+                ->setTitle($title)
+                ->setSlug($slug)
+                ->setType('evenement')
+                ->setDescription(trim($_POST['description'] ?? ''))
+                ->setShortDescription(trim($_POST['short_description'] ?? ''))
+                ->setDateStart($dateStart)
+                ->setDateEnd($dateEnd)
+                ->setDuration(null)
+                ->setLocation($location)
+                ->setLocationCity(trim($_POST['location_city'] ?? ''))
+                ->setLocationPostalCode(trim($_POST['location_postal_code'] ?? ''))
+                ->setIsOnline(isset($_POST['is_online']))
+                ->setOnlineLink(trim($_POST['online_link'] ?? ''))
+                ->setCapacity((int)($_POST['capacity'] ?? 50))
+                ->setAvailableSpots((int)($_POST['available_spots'] ?? 50))
+                ->setMinParticipants((int)($_POST['min_participants'] ?? 1))
+                ->setPrice((float) str_replace(',', '.', $_POST['price'] ?? 0))
+                ->setCurrency('EUR')
+                ->setImage($uploadedPath)
+                ->setCategoryId(!empty($_POST['category_id']) ? (int)$_POST['category_id'] : null)
+                ->setOrganizerId($_SESSION['user_id'] ?? 1)
+                ->setStatus('published')
+                ->setIsFeatured(0);
+
+            $model = new Event();
+            $idInserted = $model->insert($evenement);
+
+            if ($idInserted) {
+                $this->setFlash('success', 'Événement créé ✅');
+                $this->redirect('event', 'index');
+            }
+
+            $this->setFlash('error', 'Erreur lors de la création ❌');
+            $this->redirect('event', 'create');
+        }
+
+        // ✅ Charge les catégories pour le formulaire
+        $categoryModel = new \App\Models\Category();
+        $categories = $categoryModel->getAllActive();
+
+        $this->render('event/create', [
+            'title' => 'Créer un événement',
+            'categories' => $categories
+        ]);
+    }
+
+    // ============================================================
+    // MODIFIER UN ÉVÉNEMENT
+    // ============================================================
+    public function edit(int $id): void
+    {
+        $model = new Event();
+        $evenement = $model->getById($id);
+
+        if (!$evenement || $evenement->getType() !== 'evenement') {
+            $this->setFlash('error', 'Événement introuvable.');
+            $this->redirect('event', 'index');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $title = trim($_POST['title'] ?? '');
+            $location = trim($_POST['location'] ?? '');
+
+            if ($title === '') {
+                $this->setFlash('error', 'Le titre est obligatoire.');
+                $this->redirect('event', 'edit', ['id' => $id]);
+            }
+
+            if ($location === '') {
+                $this->setFlash('error', 'Le lieu/adresse est obligatoire.');
+                $this->redirect('event', 'edit', ['id' => $id]);
+            }
+
+            $slug = strtolower(trim(preg_replace(
+                '/[^A-Za-z0-9-]+/',
+                '-',
+                iconv('UTF-8', 'ASCII//TRANSLIT', $title)
+            )));
+            $slug = trim($slug, '-');
+
+            $dateStart = !empty($_POST['date_start'])
+                ? str_replace('T', ' ', $_POST['date_start']) . ':00'
+                : null;
+
+            $dateEnd = !empty($_POST['date_end'])
+                ? str_replace('T', ' ', $_POST['date_end']) . ':00'
+                : null;
+
+            if ($dateStart === null) {
+                $this->setFlash('error', 'La date de début est obligatoire.');
+                $this->redirect('event', 'edit', ['id' => $id]);
+            }
+
+            // upload image (optionnel)
+            $uploadedPath = $this->uploadImage('image_file');
+            if (!empty($uploadedPath)) {
+                $evenement->setImage($uploadedPath);
+            }
+
+            $evenement
+                ->setTitle($title)
+                ->setSlug($slug)
+                ->setType('evenement')
+                ->setDescription(trim($_POST['description'] ?? ''))
+                ->setShortDescription(trim($_POST['short_description'] ?? ''))
+                ->setDateStart($dateStart)
+                ->setDateEnd($dateEnd)
+                ->setLocation($location)
+                ->setLocationCity(trim($_POST['location_city'] ?? ''))
+                ->setLocationPostalCode(trim($_POST['location_postal_code'] ?? ''))
+                ->setCapacity((int)($_POST['capacity'] ?? 50))
+                ->setAvailableSpots((int)($_POST['available_spots'] ?? 50))
+                ->setMinParticipants((int)($_POST['min_participants'] ?? 1))
+                ->setPrice((float) str_replace(',', '.', $_POST['price'] ?? 0))
+                ->setCategoryId(!empty($_POST['category_id']) ? (int)$_POST['category_id'] : null);
+
+            $ok = $model->update($evenement);
+
+            if ($ok) {
+                $this->setFlash('success', 'Événement modifié ✅');
+                $this->redirect('event', 'show', ['id' => $id]);
+            }
+
+            $this->setFlash('error', 'Erreur lors de la modification ❌');
+            $this->redirect('event', 'edit', ['id' => $id]);
+        }
+
+        // ✅ Charge les catégories pour le formulaire
+        $categoryModel = new \App\Models\Category();
+        $categories = $categoryModel->getAllActive();
+
+        $this->render('event/edit', [
+            'title' => 'Modifier un événement',
+            'evenement' => $evenement,
+            'categories' => $categories
+        ]);
+    }
+
+    // ============================================================
+    // SUPPRIMER UN ÉVÉNEMENT
+    // ============================================================
+    public function delete(int $id): void
+    {
+        $model = new Event();
+        $evenement = $model->getById($id);
+
+        if (!$evenement || $evenement->getType() !== 'evenement') {
+            $this->setFlash('error', 'Événement introuvable.');
+            $this->redirect('event', 'index');
+        }
+
+        $ok = $model->delete($id);
+
+        if ($ok) {
+            $this->setFlash('success', 'Événement supprimé ✅');
+        } else {
+            $this->setFlash('error', 'Erreur lors de la suppression ❌');
+        }
+
+        $this->redirect('event', 'index');
+    }
+
+    // ============================================================
+    // UPLOAD IMAGE
+    // ============================================================
+    private function uploadImage(string $field = 'image_file'): ?string
+    {
+        if (!isset($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        if ($_FILES[$field]['error'] !== UPLOAD_ERR_OK) {
+            $this->setFlash('error', "Erreur upload (code " . $_FILES[$field]['error'] . ")");
+            return null;
+        }
+
+        $tmp = $_FILES[$field]['tmp_name'];
+        $originalName = $_FILES[$field]['name'];
+
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if (!in_array($ext, $allowed, true)) {
+            $this->setFlash('error', 'Format invalide (jpg/jpeg/png/webp uniquement).');
+            return null;
+        }
+
+        if ($_FILES[$field]['size'] > 5 * 1024 * 1024) {
+            $this->setFlash('error', 'Image trop lourde (max 5 Mo).');
+            return null;
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/events/';
+        
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        if (!is_writable($uploadDir)) {
+            $this->setFlash('error', 'Le dossier upload n\'est pas accessible en écriture.');
+            return null;
+        }
+
+        $fileName = uniqid('event_', true) . '.' . $ext;
+        $dest = $uploadDir . $fileName;
+
+        if (!move_uploaded_file($tmp, $dest)) {
+            $this->setFlash('error', 'Échec de l\'upload.');
+            return null;
+        }
+
+        return 'public/uploads/events/' . $fileName;
     }
 }

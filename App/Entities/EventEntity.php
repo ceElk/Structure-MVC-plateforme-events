@@ -540,4 +540,38 @@ class EventEntity
         }
         return number_format($this->price, 2) . ' ' . $this->currency;
     }
+
+    /**
+ * Formate la date de fin
+ */
+public function getFormattedDateEnd(string $format = 'Y-m-d H:i:s'): ?string
+{
+    if (!$this->dateEnd) {
+        return null;
+    }
+    
+    try {
+        $date = new \DateTime($this->dateEnd);
+        return $date->format($format);
+    } catch (\Exception $e) {
+        return null;
+    }
+}
+
+/**
+ * Formate l'heure de fin
+ */
+public function getFormattedTimeEnd(string $format = 'H:i'): ?string
+{
+    if (!$this->dateEnd) {
+        return null;
+    }
+    
+    try {
+        $date = new \DateTime($this->dateEnd);
+        return $date->format($format);
+    } catch (\Exception $e) {
+        return null;
+    }
+}
 }

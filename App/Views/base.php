@@ -11,6 +11,10 @@ if (!isset($BASE_URL)) {
     $BASE_URL = rtrim($BASE_URL, '/');
 }
 
+// ✅ Charger les catégories pour le menu dynamique 
+$categoryModel = new \App\Models\Category();
+$menuCategories = $categoryModel->getAllActive();
+
 $isLogged = isset($_SESSION['user_id']);
 $isAdmin  = ($isLogged && ($_SESSION['role'] ?? '') === 'admin');
 
@@ -43,8 +47,8 @@ function isActive(string $controller, string $action = 'index'): string {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- CSS projet -->
-    <link rel="stylesheet" href="<?= $BASE_URL ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?= $BASE_URL ?>/assets/css/home.css">
+    <link rel="stylesheet" href="<?= $BASE_URL ?>/assets/css/style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= $BASE_URL ?>/assets/css/home.css?v=<?= time() ?>">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -54,7 +58,6 @@ function isActive(string $controller, string $action = 'index'): string {
      style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             border-bottom: 3px solid #d4af37 !important;">
 
-    <!-- ✅ container manquant ajouté -->
     <div class="container">
 
         <!-- Logo -->
@@ -88,7 +91,7 @@ function isActive(string $controller, string $action = 'index'): string {
                         </a>
                     </li>
 
-                    <!-- Dropdown Ateliers -->
+                    <!-- Dropdown Ateliers - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'atelier') ? 'active' : '' ?>"
                            href="#"
@@ -104,27 +107,21 @@ function isActive(string $controller, string $action = 'index'): string {
                                     <i class="fas fa-list me-2"></i>Tous les ateliers
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=1">
-                                    <i class="fas fa-palette me-2"></i>Arts & Créativité
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=4">
-                                    <i class="fas fa-utensils me-2"></i>Cuisine
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=3">
-                                    <i class="fas fa-running me-2"></i>Sport
-                                </a>
-                            </li>
+                            <?php if (!empty($menuCategories)): ?>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php foreach ($menuCategories as $cat): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=<?= (int)$cat->id ?>">
+                                            <i class="<?= htmlspecialchars($cat->icon ?? 'fas fa-tag') ?> me-2"></i>
+                                            <?= htmlspecialchars($cat->name) ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
                     </li>
 
-                    <!-- Dropdown Événements -->
+                    <!-- Dropdown Événements - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'event') ? 'active' : '' ?>"
                            href="#"
@@ -136,21 +133,21 @@ function isActive(string $controller, string $action = 'index'): string {
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="evenementsDropdown">
                             <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=home&action=index">
-                                    <i class="fas fa-list me-2"></i>Tous les événements (bientôt)
+                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=event&action=index">
+                                    <i class="fas fa-list me-2"></i>Tous les événements
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=home&action=index">
-                                    <i class="fas fa-book-open me-2"></i>Culture
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=home&action=index">
-                                    <i class="fas fa-laptop-code me-2"></i>Tech
-                                </a>
-                            </li>
+                            <?php if (!empty($menuCategories)): ?>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php foreach ($menuCategories as $cat): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=event&action=index&category=<?= (int)$cat->id ?>">
+                                            <i class="<?= htmlspecialchars($cat->icon ?? 'fas fa-tag') ?> me-2"></i>
+                                            <?= htmlspecialchars($cat->name) ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
                     </li>
 
@@ -171,7 +168,7 @@ function isActive(string $controller, string $action = 'index'): string {
                 <!-- ========== UTILISATEUR CONNECTÉ ========== -->
                 <?php else: ?>
 
-                    <!-- Dropdown Ateliers -->
+                    <!-- Dropdown Ateliers - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'atelier') ? 'active' : '' ?>"
                            href="#"
@@ -187,27 +184,21 @@ function isActive(string $controller, string $action = 'index'): string {
                                     <i class="fas fa-list me-2"></i>Tous les ateliers
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=1">
-                                    <i class="fas fa-palette me-2"></i>Arts & Créativité
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=4">
-                                    <i class="fas fa-utensils me-2"></i>Cuisine
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=3">
-                                    <i class="fas fa-running me-2"></i>Sport
-                                </a>
-                            </li>
+                            <?php if (!empty($menuCategories)): ?>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php foreach ($menuCategories as $cat): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=atelier&action=index&category=<?= (int)$cat->id ?>">
+                                            <i class="<?= htmlspecialchars($cat->icon ?? 'fas fa-tag') ?> me-2"></i>
+                                            <?= htmlspecialchars($cat->name) ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
                     </li>
 
-                    <!-- Dropdown Événements -->
+                    <!-- Dropdown Événements - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'event') ? 'active' : '' ?>"
                            href="#"
@@ -219,10 +210,21 @@ function isActive(string $controller, string $action = 'index'): string {
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="evenementsDropdownConnected">
                             <li>
-                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=home&action=index">
-                                    <i class="fas fa-list me-2"></i>Tous les événements (bientôt)
+                                <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=event&action=index">
+                                    <i class="fas fa-list me-2"></i>Tous les événements
                                 </a>
                             </li>
+                            <?php if (!empty($menuCategories)): ?>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php foreach ($menuCategories as $cat): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= $BASE_URL ?>?controller=event&action=index&category=<?= (int)$cat->id ?>">
+                                            <i class="<?= htmlspecialchars($cat->icon ?? 'fas fa-tag') ?> me-2"></i>
+                                            <?= htmlspecialchars($cat->name) ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
                     </li>
 

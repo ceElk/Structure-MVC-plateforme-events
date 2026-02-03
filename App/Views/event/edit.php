@@ -1,8 +1,8 @@
 <?php
-/** @var \App\Entities\EventEntity $atelier */
+/** @var \App\Entities\EventEntity $evenement */
 ?>
 
-<h1 class="mb-4">Modifier un atelier</h1>
+<h1 class="mb-4">Modifier un événement</h1>
 
 <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
 
@@ -11,7 +11,7 @@
         <input type="text" 
                name="title" 
                class="form-control" 
-               value="<?= htmlspecialchars($atelier->getTitle() ?? '') ?>" 
+               value="<?= htmlspecialchars($evenement->getTitle() ?? '') ?>" 
                required>
     </div>
 
@@ -20,18 +20,18 @@
         <input type="text" 
                name="location" 
                class="form-control" 
-               value="<?= htmlspecialchars($atelier->getLocation() ?? '') ?>" 
+               value="<?= htmlspecialchars($evenement->getLocation() ?? '') ?>" 
                required>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Description</label>
-        <textarea name="description" class="form-control" rows="5"><?= htmlspecialchars($atelier->getDescription() ?? '') ?></textarea>
+        <textarea name="description" class="form-control" rows="5"><?= htmlspecialchars($evenement->getDescription() ?? '') ?></textarea>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Description courte</label>
-        <textarea name="short_description" class="form-control" rows="2"><?= htmlspecialchars($atelier->getShortDescription() ?? '') ?></textarea>
+        <textarea name="short_description" class="form-control" rows="2"><?= htmlspecialchars($evenement->getShortDescription() ?? '') ?></textarea>
     </div>
 
     <!-- ✅ SÉLECTEUR DE CATÉGORIE AVEC PRÉ-SÉLECTION -->
@@ -41,7 +41,7 @@
             <option value="">-- Aucune catégorie --</option>
             <?php foreach ($categories as $cat): ?>
                 <option value="<?= (int)$cat->id ?>" 
-                        <?= ($atelier->getCategoryId() == $cat->id) ? 'selected' : '' ?>>
+                        <?= ($evenement->getCategoryId() == $cat->id) ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cat->name) ?>
                 </option>
             <?php endforeach; ?>
@@ -51,19 +51,31 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label class="form-label">Date début *</label>
+            <?php 
+            $dateStartValue = '';
+            if ($evenement->getDateStart()) {
+                $dateStartValue = date('Y-m-d\TH:i', strtotime($evenement->getDateStart()));
+            }
+            ?>
             <input type="datetime-local" 
                    name="date_start" 
                    class="form-control" 
-                   value="<?= $atelier->getFormattedDateStart('Y-m-d\TH:i') ?>" 
+                   value="<?= $dateStartValue ?>" 
                    required>
         </div>
 
         <div class="col-md-6 mb-3">
             <label class="form-label">Date fin</label>
+            <?php 
+            $dateEndValue = '';
+            if ($evenement->getDateEnd()) {
+                $dateEndValue = date('Y-m-d\TH:i', strtotime($evenement->getDateEnd()));
+            }
+            ?>
             <input type="datetime-local" 
                    name="date_end" 
                    class="form-control" 
-                   value="<?= $atelier->getFormattedDateEnd('Y-m-d\TH:i') ?>">
+                   value="<?= $dateEndValue ?>">
         </div>
     </div>
 
@@ -73,7 +85,7 @@
             <input type="text" 
                    name="location_city" 
                    class="form-control" 
-                   value="<?= htmlspecialchars($atelier->getLocationCity() ?? '') ?>">
+                   value="<?= htmlspecialchars($evenement->getLocationCity() ?? '') ?>">
         </div>
 
         <div class="col-md-6 mb-3">
@@ -81,16 +93,16 @@
             <input type="text" 
                    name="location_postal_code" 
                    class="form-control" 
-                   value="<?= htmlspecialchars($atelier->getLocationPostalCode() ?? '') ?>">
+                   value="<?= htmlspecialchars($evenement->getLocationPostalCode() ?? '') ?>">
         </div>
     </div>
 
     <!-- Image actuelle -->
-    <?php if ($atelier->getImage()): ?>
+    <?php if ($evenement->getImage()): ?>
         <div class="mb-3">
             <label class="form-label">Image actuelle</label>
             <div>
-                <img src="<?= $BASE_URL ?>/<?= htmlspecialchars($atelier->getImage()) ?>" 
+                <img src="<?= $BASE_URL ?>/<?= htmlspecialchars($evenement->getImage()) ?>" 
                      alt="Image actuelle" 
                      style="max-width: 300px; height: auto; border-radius: 8px;">
             </div>
@@ -110,7 +122,7 @@
                step="0.01" 
                name="price" 
                class="form-control" 
-               value="<?= $atelier->getPrice() ?>">
+               value="<?= $evenement->getPrice() ?>">
     </div>
 
     <div class="row">
@@ -119,7 +131,7 @@
             <input type="number" 
                    name="capacity" 
                    class="form-control" 
-                   value="<?= (int)$atelier->getCapacity() ?>">
+                   value="<?= (int)$evenement->getCapacity() ?>">
         </div>
 
         <div class="col-md-4 mb-3">
@@ -127,7 +139,7 @@
             <input type="number" 
                    name="available_spots" 
                    class="form-control" 
-                   value="<?= (int)$atelier->getAvailableSpots() ?>">
+                   value="<?= (int)$evenement->getAvailableSpots() ?>">
         </div>
 
         <div class="col-md-4 mb-3">
@@ -135,7 +147,7 @@
             <input type="number" 
                    name="min_participants" 
                    class="form-control" 
-                   value="<?= (int)$atelier->getMinParticipants() ?>">
+                   value="<?= (int)$evenement->getMinParticipants() ?>">
         </div>
     </div>
 
@@ -144,7 +156,7 @@
             ✅ Enregistrer
         </button>
 
-        <a href="?controller=atelier&action=show&id=<?= (int)$atelier->getId() ?>" class="btn btn-secondary">
+        <a href="?controller=event&action=show&id=<?= (int)$evenement->getId() ?>" class="btn btn-secondary">
             ↩ Retour
         </a>
     </div>

@@ -226,4 +226,30 @@ class Event extends DbConnect
         $data = $this->fetchAll($sql);
         return $this->toEntities($data);
     }
+
+    /**
+ * Récupère les événements par type et catégorie
+ */
+/**
+ * Récupère les événements par type et catégorie
+ */
+public function getByTypeAndCategory(string $type, int $categoryId): array
+{
+    $sql = "SELECT e.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+            FROM events e
+            LEFT JOIN categories c ON e.category_id = c.id
+            WHERE e.type = :type 
+            AND e.category_id = :category_id
+            ORDER BY e.date_start ASC";
+    
+    // ✅ RETIRE la condition AND e.status = 'published' temporairement
+    
+    $bindings = [
+        ':type' => $type,
+        ':category_id' => $categoryId
+    ];
+    
+    $data = $this->fetchAll($sql, $bindings);
+    return $this->toEntities($data);
+}
 }

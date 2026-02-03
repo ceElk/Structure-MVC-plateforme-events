@@ -10,14 +10,29 @@ class AtelierController extends Controller
     public function index(): void
     {
         $model = new Event();
-        $ateliers = $model->getAllByType('atelier');
-
+        
+        // ✅ Récupère le paramètre category de l'URL
+        $categoryId = isset($_GET['category']) ? (int)$_GET['category'] : null;
+        
+        // ✅ Si une catégorie est spécifiée, filtre par catégorie
+        if ($categoryId) {
+            $ateliers = $model->getByTypeAndCategory('atelier', $categoryId);
+        } else {
+            // Sinon, affiche TOUS les ateliers
+            $ateliers = $model->getAllByType('atelier');
+        }
+        
+        // ✅ Charge les catégories pour le filtre
+        $categoryModel = new \App\Models\Category();
+        $categories = $categoryModel->getAllActive();
+    
         $this->render('atelier/index', [
-            'title' => 'Ateliers',
-            'ateliers' => $ateliers
+            'title' => $categoryId ? 'Ateliers - Filtrés' : 'Tous les ateliers',
+            'ateliers' => $ateliers,
+            'categories' => $categories,
+            'selectedCategory' => $categoryId
         ]);
     }
-
     public function show(int $id): void
     {
         $model = new Event();
@@ -129,97 +144,101 @@ class AtelierController extends Controller
         'categories' => $categories  // ✅ AJOUTÉ
     ]);
 }
-    public function edit(int $id): void
-    {
-        $model = new Event();
-        $atelier = $model->getById($id);
+public function edit(int $id): void
+{
+    $model = new Event();
+    $atelier = $model->getById($id);
 
-        if (!$atelier || $atelier->getType() !== 'atelier') {
-            $_SESSION['flash']['error'] = "Atelier introuvable.";
-            header('Location: ?controller=atelier&action=index');
-            exit;
-        }
+    if (!$atelier || $atelier->getType() !== 'atelier') {
+        $_SESSION['flash']['error'] = "Atelier introuvable.";
+        header('Location: ?controller=atelier&action=index');
+        exit;
+    }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-            $title = trim($_POST['title'] ?? '');
-            $location = trim($_POST['location'] ?? '');
+        $title = trim($_POST['title'] ?? '');
+        $location = trim($_POST['location'] ?? '');
 
-            if ($title === '') {
-                $_SESSION['flash']['error'] = "Le titre est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
-            }
-
-            if ($location === '') {
-                $_SESSION['flash']['error'] = "Le lieu/adresse est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
-            }
-
-            $slug = strtolower(trim(preg_replace(
-                '/[^A-Za-z0-9-]+/',
-                '-',
-                iconv('UTF-8', 'ASCII//TRANSLIT', $title)
-            )));
-            $slug = trim($slug, '-');
-
-            $dateStart = !empty($_POST['date_start'])
-                ? str_replace('T', ' ', $_POST['date_start']) . ':00'
-                : null;
-
-            $dateEnd = !empty($_POST['date_end'])
-                ? str_replace('T', ' ', $_POST['date_end']) . ':00'
-                : null;
-
-            if ($dateStart === null) {
-                $_SESSION['flash']['error'] = "La date de début est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
-            }
-
-            // upload image (optionnel)
-            $uploadedPath = $this->uploadImage('image_file');
-            if (!empty($uploadedPath)) {
-                $atelier->setImage($uploadedPath);
-            }
-
-            $atelier
-                ->setTitle($title)
-                ->setSlug($slug)
-                ->setType('atelier')
-                ->setDescription(trim($_POST['description'] ?? ''))
-                ->setShortDescription(trim($_POST['short_description'] ?? ''))
-                ->setDateStart($dateStart)
-                ->setDateEnd($dateEnd)
-                ->setLocation($location)
-                ->setLocationCity(trim($_POST['location_city'] ?? ''))
-                ->setLocationPostalCode(trim($_POST['location_postal_code'] ?? ''))
-                ->setCapacity((int)($_POST['capacity'] ?? 20))
-                ->setAvailableSpots((int)($_POST['available_spots'] ?? 20))
-                ->setMinParticipants((int)($_POST['min_participants'] ?? 1))
-                ->setPrice((float) str_replace(',', '.', $_POST['price'] ?? 0))
-                ->setCategoryId(!empty($_POST['category_id']) ? (int)$_POST['category_id'] : null);
-
-            $ok = $model->update($atelier);
-
-            if ($ok) {
-                $_SESSION['flash']['success'] = "Atelier modifié ✅";
-                header('Location: ?controller=atelier&action=show&id=' . (int)$atelier->getId());
-                exit;
-            }
-
-            $_SESSION['flash']['error'] = "Erreur lors de la modification ❌";
+        if ($title === '') {
+            $_SESSION['flash']['error'] = "Le titre est obligatoire.";
             header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
             exit;
         }
 
-        $this->render('atelier/edit', [
-            'title' => 'Modifier un atelier',
-            'atelier' => $atelier
-        ]);
+        if ($location === '') {
+            $_SESSION['flash']['error'] = "Le lieu/adresse est obligatoire.";
+            header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
+            exit;
+        }
+
+        $slug = strtolower(trim(preg_replace(
+            '/[^A-Za-z0-9-]+/',
+            '-',
+            iconv('UTF-8', 'ASCII//TRANSLIT', $title)
+        )));
+        $slug = trim($slug, '-');
+
+        $dateStart = !empty($_POST['date_start'])
+            ? str_replace('T', ' ', $_POST['date_start']) . ':00'
+            : null;
+
+        $dateEnd = !empty($_POST['date_end'])
+            ? str_replace('T', ' ', $_POST['date_end']) . ':00'
+            : null;
+
+        if ($dateStart === null) {
+            $_SESSION['flash']['error'] = "La date de début est obligatoire.";
+            header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
+            exit;
+        }
+
+        // upload image (optionnel)
+        $uploadedPath = $this->uploadImage('image_file');
+        if (!empty($uploadedPath)) {
+            $atelier->setImage($uploadedPath);
+        }
+
+        $atelier
+            ->setTitle($title)
+            ->setSlug($slug)
+            ->setType('atelier')
+            ->setDescription(trim($_POST['description'] ?? ''))
+            ->setShortDescription(trim($_POST['short_description'] ?? ''))
+            ->setDateStart($dateStart)
+            ->setDateEnd($dateEnd)
+            ->setLocation($location)
+            ->setLocationCity(trim($_POST['location_city'] ?? ''))
+            ->setLocationPostalCode(trim($_POST['location_postal_code'] ?? ''))
+            ->setCapacity((int)($_POST['capacity'] ?? 20))
+            ->setAvailableSpots((int)($_POST['available_spots'] ?? 20))
+            ->setMinParticipants((int)($_POST['min_participants'] ?? 1))
+            ->setPrice((float) str_replace(',', '.', $_POST['price'] ?? 0))
+            ->setCategoryId(!empty($_POST['category_id']) ? (int)$_POST['category_id'] : null);
+
+        $ok = $model->update($atelier);
+
+        if ($ok) {
+            $_SESSION['flash']['success'] = "Atelier modifié ✅";
+            header('Location: ?controller=atelier&action=show&id=' . (int)$atelier->getId());
+            exit;
+        }
+
+        $_SESSION['flash']['error'] = "Erreur lors de la modification ❌";
+        header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
+        exit;
     }
 
+    // ✅ AJOUTE ICI : Charge les catégories pour le formulaire
+    $categoryModel = new \App\Models\Category();
+    $categories = $categoryModel->getAllActive();
+
+    $this->render('atelier/edit', [
+        'title' => 'Modifier un atelier',
+        'atelier' => $atelier,
+        'categories' => $categories  // ✅ AJOUTE cette ligne
+    ]);
+}
     public function delete(int $id): void
     {
         $model = new Event();
