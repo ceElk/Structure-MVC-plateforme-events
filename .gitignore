@@ -1,1 +1,17 @@
+# --- Composer ---
+/vendor/
+
+# --- Uploads (images envoyées) ---
+/public/uploads/
+/public/uploads/events/
+
+# --- MAMP / PHP temp ---
+*.log
+
+# --- macOS ---
+.DS_Store
+
+# --- IDE ---
+.idea/
+.vscode/
 /vendor/

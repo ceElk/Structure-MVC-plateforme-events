@@ -11,26 +11,27 @@ class AtelierController extends Controller
     {
         $model = new Event();
         
-        // ✅ Récupère le paramètre category de l'URL
-        $categoryId = isset($_GET['category']) ? (int)$_GET['category'] : null;
+        $filters = [
+            'type' => 'atelier',
+            'category' => $_GET['category'] ?? null,
+            'city' => $_GET['city'] ?? null,
+            'price_min' => $_GET['price_min'] ?? null,
+            'price_max' => $_GET['price_max'] ?? null,
+            'date_min' => $_GET['date_min'] ?? null,
+            'date_max' => $_GET['date_max'] ?? null,
+        ];
         
-        // ✅ Si une catégorie est spécifiée, filtre par catégorie
-        if ($categoryId) {
-            $ateliers = $model->getByTypeAndCategory('atelier', $categoryId);
-        } else {
-            // Sinon, affiche TOUS les ateliers
-            $ateliers = $model->getAllByType('atelier');
-        }
+        $ateliers = $model->advancedSearch($filters);
         
-        // ✅ Charge les catégories pour le filtre
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
-    
+
         $this->render('atelier/index', [
-            'title' => $categoryId ? 'Ateliers - Filtrés' : 'Tous les ateliers',
+            'title' => 'Tous les ateliers',
             'ateliers' => $ateliers,
             'categories' => $categories,
-            'selectedCategory' => $categoryId
+            'selectedCategory' => $filters['category'],
+            'type' => 'atelier' // ✅ AJOUTÉ
         ]);
     }
 
@@ -40,9 +41,8 @@ class AtelierController extends Controller
         $atelier = $model->getById($id);
 
         if (!$atelier || $atelier->getType() !== 'atelier') {
-            $_SESSION['flash']['error'] = "Atelier introuvable.";
-            header('Location: ?controller=atelier&action=index');
-            exit;
+            $this->setFlash('error', 'Atelier introuvable.');
+            $this->redirect('atelier', 'index');
         }
 
         $this->render('atelier/show', [
@@ -53,23 +53,9 @@ class AtelierController extends Controller
 
     public function create(): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            
-            // ✅ AJOUTE CE DEBUG ICI
-            echo "<div style='background: red; padding: 20px; color: white; margin: 20px;'>";
-            echo "<h2>🔍 DEBUG CREATE - POST REÇU</h2>";
-            echo "<strong>\$_FILES :</strong><br>";
-            echo "<pre>" . print_r($_FILES, true) . "</pre>";
-            echo "<strong>\$_POST :</strong><br>";
-            echo "<pre>" . print_r($_POST, true) . "</pre>";
-            echo "</div>";
-
-            $title = trim($_POST['title'] ?? '');
-            $location = trim($_POST['location'] ?? '');
 
             $title = trim($_POST['title'] ?? '');
             $location = trim($_POST['location'] ?? '');
@@ -83,12 +69,10 @@ class AtelierController extends Controller
                 : null;
 
             if ($title === '' || $location === '' || $dateStart === null) {
-                $_SESSION['flash']['error'] = "Titre, lieu et date de début obligatoires.";
-                header('Location: ?controller=atelier&action=create');
-                exit;
+                $this->setFlash('error', 'Titre, lieu et date de début obligatoires.');
+                $this->redirect('atelier', 'create');
             }
 
-            // slug
             $slug = strtolower(trim(preg_replace(
                 '/[^A-Za-z0-9-]+/',
                 '-',
@@ -96,7 +80,6 @@ class AtelierController extends Controller
             )));
             $slug = trim($slug, '-');
 
-            // upload (optionnel)
             $uploadedPath = $this->uploadImage('image_file');
 
             $atelier = new EventEntity();
@@ -129,17 +112,14 @@ class AtelierController extends Controller
             $idInserted = $model->insert($atelier);
 
             if ($idInserted) {
-                $_SESSION['flash']['success'] = "Atelier créé ✅";
-                header('Location: ?controller=atelier&action=index');
-                exit;
+                $this->setFlash('success', 'Atelier créé ✅');
+                $this->redirect('atelier', 'index');
             }
 
-            $_SESSION['flash']['error'] = "Erreur lors de la création ❌";
-            header('Location: ?controller=atelier&action=create');
-            exit;
+            $this->setFlash('error', 'Erreur lors de la création ❌');
+            $this->redirect('atelier', 'create');
         }
 
-        // ✅ AJOUTÉ : Charge les catégories pour le formulaire
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
@@ -151,16 +131,14 @@ class AtelierController extends Controller
 
     public function edit(int $id): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         $model = new Event();
         $atelier = $model->getById($id);
 
         if (!$atelier || $atelier->getType() !== 'atelier') {
-            $_SESSION['flash']['error'] = "Atelier introuvable.";
-            header('Location: ?controller=atelier&action=index');
-            exit;
+            $this->setFlash('error', 'Atelier introuvable.');
+            $this->redirect('atelier', 'index');
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -169,15 +147,13 @@ class AtelierController extends Controller
             $location = trim($_POST['location'] ?? '');
 
             if ($title === '') {
-                $_SESSION['flash']['error'] = "Le titre est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
+                $this->setFlash('error', 'Le titre est obligatoire.');
+                $this->redirect('atelier', 'edit', ['id' => $id]);
             }
 
             if ($location === '') {
-                $_SESSION['flash']['error'] = "Le lieu/adresse est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
+                $this->setFlash('error', 'Le lieu/adresse est obligatoire.');
+                $this->redirect('atelier', 'edit', ['id' => $id]);
             }
 
             $slug = strtolower(trim(preg_replace(
@@ -196,12 +172,10 @@ class AtelierController extends Controller
                 : null;
 
             if ($dateStart === null) {
-                $_SESSION['flash']['error'] = "La date de début est obligatoire.";
-                header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-                exit;
+                $this->setFlash('error', 'La date de début est obligatoire.');
+                $this->redirect('atelier', 'edit', ['id' => $id]);
             }
 
-            // upload image (optionnel)
             $uploadedPath = $this->uploadImage('image_file');
             if (!empty($uploadedPath)) {
                 $atelier->setImage($uploadedPath);
@@ -227,17 +201,14 @@ class AtelierController extends Controller
             $ok = $model->update($atelier);
 
             if ($ok) {
-                $_SESSION['flash']['success'] = "Atelier modifié ✅";
-                header('Location: ?controller=atelier&action=show&id=' . (int)$atelier->getId());
-                exit;
+                $this->setFlash('success', 'Atelier modifié ✅');
+                $this->redirect('atelier', 'show', ['id' => $id]);
             }
 
-            $_SESSION['flash']['error'] = "Erreur lors de la modification ❌";
-            header('Location: ?controller=atelier&action=edit&id=' . (int)$atelier->getId());
-            exit;
+            $this->setFlash('error', 'Erreur lors de la modification ❌');
+            $this->redirect('atelier', 'edit', ['id' => $id]);
         }
 
-        // ✅ AJOUTE ICI : Charge les catégories pour le formulaire
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
@@ -250,172 +221,68 @@ class AtelierController extends Controller
 
     public function delete(int $id): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         $model = new Event();
         $atelier = $model->getById($id);
 
         if (!$atelier || $atelier->getType() !== 'atelier') {
-            $_SESSION['flash']['error'] = "Atelier introuvable.";
-            header('Location: ?controller=atelier&action=index');
-            exit;
+            $this->setFlash('error', 'Atelier introuvable.');
+            $this->redirect('atelier', 'index');
         }
 
         $ok = $model->delete($id);
 
-        $_SESSION['flash'][$ok ? 'success' : 'error'] = $ok
-            ? "Atelier supprimé ✅"
-            : "Erreur lors de la suppression ❌";
-
-        header('Location: ?controller=atelier&action=index');
-        exit;
-    }
-    
-    private function resizeImage(string $source, string $destination, int $maxWidth, int $maxHeight): bool
-    {
-        $imageInfo = getimagesize($source);
-        if (!$imageInfo) {
-            return false;
-        }
-    
-        [$width, $height, $type] = $imageInfo;
-    
-        switch ($type) {
-            case IMAGETYPE_JPEG:
-                $src = imagecreatefromjpeg($source);
-                break;
-            case IMAGETYPE_PNG:
-                $src = imagecreatefrompng($source);
-                break;
-            case IMAGETYPE_WEBP:
-                $src = imagecreatefromwebp($source);
-                break;
-            default:
-                return false;
-        }
-    
-        $ratio = min($maxWidth / $width, $maxHeight / $height);
-        
-        if ($ratio >= 1) {
-            $newWidth = $width;
-            $newHeight = $height;
-        } else {
-            $newWidth = (int)($width * $ratio);
-            $newHeight = (int)($height * $ratio);
-        }
-    
-        $dst = imagecreatetruecolor($newWidth, $newHeight);
-    
-        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_WEBP) {
-            imagealphablending($dst, false);
-            imagesavealpha($dst, true);
-            $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
-            imagefill($dst, 0, 0, $transparent);
-        }
-    
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-    
-        $result = false;
-        switch ($type) {
-            case IMAGETYPE_JPEG:
-                $result = imagejpeg($dst, $destination, 85);
-                break;
-            case IMAGETYPE_PNG:
-                $result = imagepng($dst, $destination, 8);
-                break;
-            case IMAGETYPE_WEBP:
-                $result = imagewebp($dst, $destination, 85);
-                break;
-        }
-    
-        imagedestroy($src);
-        imagedestroy($dst);
-    
-        return $result;
+        $this->setFlash($ok ? 'success' : 'error', $ok ? 'Atelier supprimé ✅' : 'Erreur lors de la suppression ❌');
+        $this->redirect('atelier', 'index');
     }
 
     private function uploadImage(string $field = 'image_file'): ?string
     {
-        echo "<div style='background: yellow; padding: 20px; border: 5px solid red;'>";
-        echo "<h3>🔍 DEBUG UPLOAD</h3>";
-        echo "<strong>\$_FILES contient :</strong><br>";
-        echo "<pre>" . print_r($_FILES, true) . "</pre>";
-        echo "</div>";
-
-        if (!isset($_FILES[$field])) {
-            echo "<div style='background: orange; padding: 10px;'>❌ Pas de fichier uploadé</div>";
-            return null;
-        }
-
-        if ($_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
-            echo "<div style='background: orange; padding: 10px;'>❌ UPLOAD_ERR_NO_FILE</div>";
+        if (!isset($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
             return null;
         }
 
         if ($_FILES[$field]['error'] !== UPLOAD_ERR_OK) {
-            echo "<div style='background: red; padding: 10px; color: white;'>❌ Erreur : " . $_FILES[$field]['error'] . "</div>";
-            $_SESSION['flash']['error'] = "Erreur upload (code " . $_FILES[$field]['error'] . ")";
+            $this->setFlash('error', "Erreur upload (code " . $_FILES[$field]['error'] . ")");
             return null;
         }
 
         $tmp = $_FILES[$field]['tmp_name'];
         $originalName = $_FILES[$field]['name'];
-        
-        echo "<div style='background: lime; padding: 10px;'>✅ Fichier détecté : $originalName</div>";
 
         $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
         $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
         if (!in_array($ext, $allowed, true)) {
-            echo "<div style='background: red; padding: 10px;'>❌ Format invalide</div>";
-            $_SESSION['flash']['error'] = "Format invalide (jpg/jpeg/png/webp uniquement).";
+            $this->setFlash('error', 'Format invalide (jpg/jpeg/png/webp uniquement).');
             return null;
         }
 
         if ($_FILES[$field]['size'] > 5 * 1024 * 1024) {
-            echo "<div style='background: red; padding: 10px;'>❌ Fichier trop lourd</div>";
-            $_SESSION['flash']['error'] = "Image trop lourde (max 5 Mo).";
+            $this->setFlash('error', 'Image trop lourde (max 5 Mo).');
             return null;
         }
 
         $uploadDir = __DIR__ . '/../../public/uploads/events/';
-        
-        echo "<div style='background: cyan; padding: 10px;'>";
-        echo "📁 Upload dir : $uploadDir<br>";
-        echo "📂 Dir existe ? " . (is_dir($uploadDir) ? '✅ OUI' : '❌ NON') . "<br>";
-        echo "✍️ Dir writable ? " . (is_writable($uploadDir) ? '✅ OUI' : '❌ NON') . "<br>";
-        echo "</div>";
-        
+
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
-            echo "<div style='background: yellow; padding: 10px;'>📁 Dossier créé</div>";
         }
 
         if (!is_writable($uploadDir)) {
-            echo "<div style='background: red; padding: 10px;'>❌ Dossier non accessible en écriture</div>";
-            $_SESSION['flash']['error'] = "Le dossier upload n'est pas accessible en écriture.";
+            $this->setFlash('error', 'Le dossier upload n\'est pas accessible en écriture.');
             return null;
         }
 
         $fileName = uniqid('event_', true) . '.' . $ext;
         $dest = $uploadDir . $fileName;
-        
-        echo "<div style='background: magenta; padding: 10px; color: white;'>";
-        echo "💾 Destination : $dest<br>";
-        echo "</div>";
 
         if (!move_uploaded_file($tmp, $dest)) {
-            echo "<div style='background: red; padding: 10px; color: white;'>❌ move_uploaded_file() a échoué</div>";
-            $_SESSION['flash']['error'] = "Échec de l'upload.";
+            $this->setFlash('error', 'Échec de l\'upload.');
             return null;
         }
-        
-        echo "<div style='background: green; padding: 10px; color: white;'>✅ Fichier uploadé avec succès !</div>";
 
-        $webPath = 'public/uploads/events/' . $fileName;
-        echo "<div style='background: blue; padding: 10px; color: white;'>🌐 Chemin web enregistré en BDD : $webPath</div>";
-        
-        return $webPath;
+        return 'public/uploads/events/' . $fileName;
     }
 }

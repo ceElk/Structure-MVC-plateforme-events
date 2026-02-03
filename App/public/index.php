@@ -6,29 +6,31 @@
 /*ni_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);*/
+// pour les log d'erreur commande terminal:tail -f /Applications/MAMP/logs/php_error.log
+// ✅ AFFICHER LES ERREURS
 
-// ... reste du code
-// ==============================
-// AUTOLOADER
-// ==============================
-require_once __DIR__ . '/../autoloader.php';
- // ⬅️ MINUSCULES !
+// ✅ AFFICHER LES ERREURS (développement uniquement)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
+// ✅ Démarrer la session UNE SEULE FOIS
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// ✅ Définir la constante BASE_URL
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$BASE_URL = str_replace('/index.php', '', $scriptName);
+$BASE_URL = rtrim($BASE_URL, '/');
+define('BASE_URL', $BASE_URL);
+
+// ✅ Autoloader
+require_once __DIR__ . '/../Autoloader.php';
 App\Autoloader::register();
 
-// ==============================
-// SESSION
-// ==============================
-session_start();
-
-// ==============================
-// ROUTER
-// ==============================
-use App\core\Router;
-
-$router = new Router();
+// ✅ Router
+$router = new App\Core\Router();
 $router->routes();
-
 /*## Les changements importants :
 
 1. ✅ `require_once __DIR__ . '/../Autoloader.php';` → Charge le fichier

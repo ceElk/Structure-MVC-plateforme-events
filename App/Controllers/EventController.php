@@ -4,29 +4,39 @@ namespace App\Controllers;
 
 use App\Models\Event;
 use App\Entities\EventEntity;
+use App\Models\Category;
 
 class EventController extends Controller
 {
+    /**
+     * Liste des événements (type = evenement)
+     * filtres : category, city, price_min, price_max, date_min, date_max
+     */
     public function index(): void
     {
         $model = new Event();
-        
-        $categoryId = isset($_GET['category']) ? (int)$_GET['category'] : null;
-        
-        if ($categoryId) {
-            $evenements = $model->getByTypeAndCategory('evenement', $categoryId);
-        } else {
-            $evenements = $model->getAllByType('evenement');
-        }
-        
-        $categoryModel = new \App\Models\Category();
+
+        $filters = [
+            'type' => 'evenement',
+            'category' => $_GET['category'] ?? null,
+            'city' => $_GET['city'] ?? null,
+            'price_min' => $_GET['price_min'] ?? null,
+            'price_max' => $_GET['price_max'] ?? null,
+            'date_min' => $_GET['date_min'] ?? null,
+            'date_max' => $_GET['date_max'] ?? null,
+        ];
+
+        $evenements = $model->advancedSearch($filters);
+
+        $categoryModel = new Category();
         $categories = $categoryModel->getAllActive();
 
         $this->render('event/index', [
-            'title' => $categoryId ? 'Événements - Filtrés' : 'Tous les événements',
+            'title' => 'Tous les événements',
             'evenements' => $evenements,
             'categories' => $categories,
-            'selectedCategory' => $categoryId
+            'selectedCategory' => $filters['category'],
+            'type' => 'evenement' // ✅ AJOUTÉ
         ]);
     }
 
@@ -50,7 +60,6 @@ class EventController extends Controller
 
     public function create(): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -89,7 +98,6 @@ class EventController extends Controller
                 ->setShortDescription(trim($_POST['short_description'] ?? ''))
                 ->setDateStart($dateStart)
                 ->setDateEnd($dateEnd)
-                ->setDuration(null)
                 ->setLocation($location)
                 ->setLocationCity(trim($_POST['location_city'] ?? ''))
                 ->setLocationPostalCode(trim($_POST['location_postal_code'] ?? ''))
@@ -118,7 +126,7 @@ class EventController extends Controller
             $this->redirect('event', 'create');
         }
 
-        $categoryModel = new \App\Models\Category();
+        $categoryModel = new Category();
         $categories = $categoryModel->getAllActive();
 
         $this->render('event/create', [
@@ -129,7 +137,6 @@ class EventController extends Controller
 
     public function edit(int $id): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         $model = new Event();
@@ -208,7 +215,7 @@ class EventController extends Controller
             $this->redirect('event', 'edit', ['id' => $id]);
         }
 
-        $categoryModel = new \App\Models\Category();
+        $categoryModel = new Category();
         $categories = $categoryModel->getAllActive();
 
         $this->render('event/edit', [
@@ -220,7 +227,6 @@ class EventController extends Controller
 
     public function delete(int $id): void
     {
-        // 🔒 PROTECTION ADMIN
         $this->requireAdmin();
 
         $model = new Event();
@@ -233,12 +239,7 @@ class EventController extends Controller
 
         $ok = $model->delete($id);
 
-        if ($ok) {
-            $this->setFlash('success', 'Événement supprimé ✅');
-        } else {
-            $this->setFlash('error', 'Erreur lors de la suppression ❌');
-        }
-
+        $this->setFlash($ok ? 'success' : 'error', $ok ? 'Événement supprimé ✅' : 'Erreur lors de la suppression ❌');
         $this->redirect('event', 'index');
     }
 
@@ -269,15 +270,10 @@ class EventController extends Controller
             return null;
         }
 
-        $uploadDir = __DIR__ . '/../../public/uploads/events/';
-        
+        $uploadDir = dirname(__DIR__, 2) . '/public/uploads/events/';
+
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
-        }
-
-        if (!is_writable($uploadDir)) {
-            $this->setFlash('error', 'Le dossier upload n\'est pas accessible en écriture.');
-            return null;
         }
 
         $fileName = uniqid('event_', true) . '.' . $ext;

@@ -228,38 +228,129 @@ class Event extends DbConnect
     }
 
     /**
- * Récupère les événements par type et catégorie
- */
-/**
- * Récupère les événements par type et catégorie
- */
-public function getByTypeAndCategory(string $type, int $categoryId): array
-{
-    $sql = "SELECT e.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+     * Récupère les événements par type et catégorie
+     */
+    public function getByTypeAndCategory(string $type, int $categoryId): array
+    {
+        $sql = "SELECT e.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+                FROM events e
+                LEFT JOIN categories c ON e.category_id = c.id
+                WHERE e.type = :type 
+                AND e.category_id = :category_id
+                ORDER BY e.date_start ASC";
+        
+        $bindings = [
+            ':type' => $type,
+            ':category_id' => $categoryId
+        ];
+        
+        $data = $this->fetchAll($sql, $bindings);
+        return $this->toEntities($data);
+    }
+
+    /**
+     * Compte le nombre total d'événements
+     */
+    public function countAll(): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM events";
+        $result = $this->fetch($sql);
+        return (int)($result->total ?? 0);
+    }
+
+    /**
+     * Recherche avancée avec filtres multiples
+     */
+    public function advancedSearch(array $filters): array
+    {
+        $sql = "
+            SELECT 
+                e.*,
+                c.name AS category_name,
+                c.color AS category_color,
+                c.icon AS category_icon
             FROM events e
             LEFT JOIN categories c ON e.category_id = c.id
-            WHERE e.type = :type 
-            AND e.category_id = :category_id
-            ORDER BY e.date_start ASC";
-    
-    // ✅ RETIRE la condition AND e.status = 'published' temporairement
-    
-    $bindings = [
-        ':type' => $type,
-        ':category_id' => $categoryId
-    ];
-    
-    $data = $this->fetchAll($sql, $bindings);
-    return $this->toEntities($data);
-}
+            WHERE e.status = 'published'
+        ";
 
-/**
- * Compte le nombre total d'événements
- */
-public function countAll(): int
-{
-    $sql = "SELECT COUNT(*) as total FROM events";
-    $result = $this->fetch($sql);
-    return (int)($result->total ?? 0);
-}
+        $bindings = [];
+
+        // Filtre par type
+        if (!empty($filters['type']) && in_array($filters['type'], ['atelier', 'evenement'])) {
+            $sql .= " AND e.type = :type";
+            $bindings[':type'] = $filters['type'];
+        }
+
+        // Filtre par catégorie
+        if (!empty($filters['category'])) {
+            $sql .= " AND e.category_id = :category";
+            $bindings[':category'] = (int)$filters['category'];
+        }
+
+        // Filtre par ville
+        if (!empty($filters['city'])) {
+            $sql .= " AND e.location_city LIKE :city";
+            $bindings[':city'] = '%' . $filters['city'] . '%';
+        }
+
+        // Filtre par prix minimum
+        if (!empty($filters['price_min'])) {
+            $sql .= " AND e.price >= :price_min";
+            $bindings[':price_min'] = (float)$filters['price_min'];
+        }
+
+        // Filtre par prix maximum
+        if (!empty($filters['price_max'])) {
+            $sql .= " AND e.price <= :price_max";
+            $bindings[':price_max'] = (float)$filters['price_max'];
+        }
+
+        // Filtre par date minimum
+        if (!empty($filters['date_min'])) {
+            $sql .= " AND e.date_start >= :date_min";
+            $bindings[':date_min'] = $filters['date_min'];
+        }
+
+        // Filtre par date maximum
+        if (!empty($filters['date_max'])) {
+            $sql .= " AND e.date_start <= :date_max";
+            $bindings[':date_max'] = $filters['date_max'];
+        }
+
+        $sql .= " ORDER BY e.date_start ASC";
+
+        $data = $this->fetchAll($sql, $bindings);
+        return $this->toEntities($data);
+    }
+
+    /**
+     * Recherche globale dans les événements et ateliers
+     */
+    public function search(string $query): array
+    {
+        $sql = "
+            SELECT 
+                e.*,
+                c.name AS category_name,
+                c.color AS category_color,
+                c.icon AS category_icon
+            FROM events e
+            LEFT JOIN categories c ON e.category_id = c.id
+            WHERE (
+                e.title LIKE :query
+                OR e.description LIKE :query
+                OR e.location_city LIKE :query
+                OR e.location LIKE :query
+                OR c.name LIKE :query
+            )
+            AND e.status = 'published'
+            ORDER BY e.date_start ASC
+        ";
+
+        $searchTerm = '%' . $query . '%';
+        $data = $this->fetchAll($sql, [':query' => $searchTerm]);
+        
+        return $this->toEntities($data);
+    }
 }

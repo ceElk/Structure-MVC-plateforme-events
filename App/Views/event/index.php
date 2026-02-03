@@ -8,7 +8,68 @@
         </a>
     <?php endif; ?>
 </div>
-
+<!-- Filtres avancés -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-filter me-2"></i> Filtres avancés
+        </h5>
+        
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="controller" value="<?= $type === 'atelier' ? 'atelier' : 'event' ?>">
+            <input type="hidden" name="action" value="index">
+            
+            <div class="col-md-3">
+                <label class="form-label">Ville</label>
+                <input type="text" 
+                       name="city" 
+                       class="form-control" 
+                       placeholder="Paris, Lyon..."
+                       value="<?= htmlspecialchars($_GET['city'] ?? '') ?>">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Prix minimum</label>
+                <input type="number" 
+                       name="price_min" 
+                       class="form-control" 
+                       placeholder="0"
+                       min="0"
+                       step="0.01"
+                       value="<?= htmlspecialchars($_GET['price_min'] ?? '') ?>">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Prix maximum</label>
+                <input type="number" 
+                       name="price_max" 
+                       class="form-control" 
+                       placeholder="100"
+                       min="0"
+                       step="0.01"
+                       value="<?= htmlspecialchars($_GET['price_max'] ?? '') ?>">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Date à partir de</label>
+                <input type="date" 
+                       name="date_min" 
+                       class="form-control"
+                       value="<?= htmlspecialchars($_GET['date_min'] ?? '') ?>">
+            </div>
+            
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i> Appliquer les filtres
+                </button>
+                <a href="?controller=<?= $type === 'atelier' ? 'atelier' : 'event' ?>&action=index" 
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i> Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 <!-- Filtres par catégorie -->
 <?php if (!empty($categories)): ?>
     <div class="mb-4">

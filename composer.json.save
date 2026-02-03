@@ -1,0 +1,32 @@
+{
+  "name": "moonpluto/plateforme-events",
+  "description": "Plateforme Events",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "Moonpluto\\PlateformeEvents\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Cecilia ELkrieff",
+      "email": "cecilia.elkrieff@gmail.com"
+    }
+  ],
+  "require": {}
+}
+{
+    "name": "moonpluto/plateforme-events",
+    "description": "ls",
+    "autoload": {
+        "psr-4": {
+            "Moonpluto\\PlateformeEvents\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "cat composer.json"
+        }
+    ],
+    "require": {}
+}

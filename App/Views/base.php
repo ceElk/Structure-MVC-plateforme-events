@@ -58,13 +58,41 @@ function isActive(string $controller, string $action = 'index'): string {
      style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             border-bottom: 3px solid #d4af37 !important;">
 
-    <div class="container">
+    <div class="container-fluid px-4">
 
         <!-- Logo -->
-        <a class="navbar-brand fw-bold" href="<?= $BASE_URL ?>?controller=home&action=index">
-            <i class="fas fa-star me-2"></i>
+        <a class="navbar-brand fw-bold d-flex align-items-center" 
+           href="<?= $BASE_URL ?>?controller=home&action=index"
+           style="font-size: 1.5rem; color: #d4af37;">
+            <i class="fas fa-calendar-star me-2" style="font-size: 1.8rem;"></i>
             <span>EventHub</span>
         </a>
+
+        <!-- ✅ BARRE DE RECHERCHE GLOBALE -->
+        <form class="d-none d-lg-flex mx-auto" 
+              style="max-width: 500px; width: 100%;" 
+              action="<?= $BASE_URL ?>" 
+              method="GET">
+            <input type="hidden" name="controller" value="search">
+            <input type="hidden" name="action" value="index">
+            <div class="input-group">
+                <input type="text" 
+                       name="q" 
+                       class="form-control" 
+                       placeholder="Rechercher un événement, atelier, ville..."
+                       value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                       style="border-radius: 50px 0 0 50px; padding: 0.6rem 1.2rem;">
+                <button class="btn" 
+                        type="submit"
+                        style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); 
+                               color: #1a1a1a; 
+                               border-radius: 0 50px 50px 0; 
+                               font-weight: bold;
+                               padding: 0.6rem 1.5rem;">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
 
         <!-- Burger -->
         <button class="navbar-toggler"
@@ -79,6 +107,24 @@ function isActive(string $controller, string $action = 'index'): string {
 
         <!-- Menu principal -->
         <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- ✅ BARRE DE RECHERCHE MOBILE -->
+            <form class="d-lg-none my-3" 
+                  action="<?= $BASE_URL ?>" 
+                  method="GET">
+                <input type="hidden" name="controller" value="search">
+                <input type="hidden" name="action" value="index">
+                <div class="input-group">
+                    <input type="text" 
+                           name="q" 
+                           class="form-control" 
+                           placeholder="Rechercher..."
+                           value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
             <ul class="navbar-nav ms-auto">
 
                 <!-- ========== VISITEUR NON CONNECTÉ ========== -->
@@ -94,7 +140,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <!-- Dropdown Ateliers - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'atelier') ? 'active' : '' ?>"
-                           href="#"
+                           href="<?= $BASE_URL ?>?controller=atelier&action=index"
                            id="ateliersDropdown"
                            role="button"
                            data-bs-toggle="dropdown"
@@ -124,7 +170,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <!-- Dropdown Événements - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'event') ? 'active' : '' ?>"
-                           href="#"
+                           href="<?= $BASE_URL ?>?controller=event&action=index"
                            id="evenementsDropdown"
                            role="button"
                            data-bs-toggle="dropdown"
@@ -171,7 +217,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <!-- Dropdown Ateliers - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'atelier') ? 'active' : '' ?>"
-                           href="#"
+                           href="<?= $BASE_URL ?>?controller=atelier&action=index"
                            id="ateliersDropdownConnected"
                            role="button"
                            data-bs-toggle="dropdown"
@@ -201,7 +247,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <!-- Dropdown Événements - DYNAMIQUE -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= ($currentController === 'event') ? 'active' : '' ?>"
-                           href="#"
+                           href="<?= $BASE_URL ?>?controller=event&action=index"
                            id="evenementsDropdownConnected"
                            role="button"
                            data-bs-toggle="dropdown"
@@ -248,7 +294,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <?php if ($isAdmin): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
-                               href="#"
+                               href="<?= $BASE_URL ?>?controller=admin&action=dashboard"
                                id="adminDropdown"
                                role="button"
                                data-bs-toggle="dropdown"
@@ -265,21 +311,20 @@ function isActive(string $controller, string $action = 'index'): string {
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item"
-                                       href="<?= $BASE_URL ?>?controller=admin&action=events">
-                                        <i class="fas fa-calendar-check me-2"></i>Gérer Ateliers & Événements
+                                       href="<?= $BASE_URL ?>?controller=admin&action=users">
+                                        <i class="fas fa-users me-2"></i>Gérer Utilisateurs
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item"
-                                       href="<?= $BASE_URL ?>?controller=admin&action=categories">
-                                        <i class="fas fa-tags me-2"></i>Gérer Catégories
+                                       href="<?= $BASE_URL ?>?controller=event&action=index">
+                                        <i class="fas fa-calendar-check me-2"></i>Gérer Événements
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item"
-                                       href="<?= $BASE_URL ?>?controller=admin&action=reservations">
-                                        <i class="fas fa-clipboard-list me-2"></i>Toutes les Réservations
+                                       href="<?= $BASE_URL ?>?controller=atelier&action=index">
+                                        <i class="fas fa-palette me-2"></i>Gérer Ateliers
                                     </a>
                                 </li>
                             </ul>
@@ -289,7 +334,7 @@ function isActive(string $controller, string $action = 'index'): string {
                     <!-- User -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle"
-                           href="#"
+                           href="<?= $BASE_URL ?>?controller=user&action=profile"
                            id="userDropdown"
                            role="button"
                            data-bs-toggle="dropdown"
@@ -317,90 +362,39 @@ function isActive(string $controller, string $action = 'index'): string {
                 <?php endif; ?>
             </ul>
         </div>
-
     </div>
 </nav>
 
-<!-- ========== FLASH ========== -->
-<?php if (isset($_SESSION['flash'])): ?>
-    <div class="container mt-3">
-        <?php foreach ($_SESSION['flash'] as $type => $message): ?>
-            <?php
-            $bootstrapType = match($type) {
-                'error' => 'danger',
-                'success' => 'success',
-                'warning' => 'warning',
-                'info' => 'info',
-                default => 'secondary'
-            };
+<!-- ========== CONTENU ========== -->
+<main class="flex-grow-1">
+    <div class="container my-4">
+        
+        <!-- ✅ MESSAGES FLASH -->
+        <?php if (isset($_SESSION['flash'])): ?>
+            <?php foreach ($_SESSION['flash'] as $type => $message): ?>
+                <div class="alert alert-<?= $type === 'error' ? 'danger' : $type ?> alert-dismissible fade show" role="alert">
+                    <?= htmlspecialchars($message) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endforeach; ?>
+            <?php unset($_SESSION['flash']); ?>
+        <?php endif; ?>
 
-            $icon = match($type) {
-                'error' => 'exclamation-circle',
-                'success' => 'check-circle',
-                'warning' => 'exclamation-triangle',
-                'info' => 'info-circle',
-                default => 'bell'
-            };
-            ?>
-            <div class="alert alert-<?= $bootstrapType ?> alert-dismissible fade show shadow-sm" role="alert">
-                <i class="fas fa-<?= $icon ?> me-2"></i>
-                <?= htmlspecialchars($message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endforeach; ?>
-    </div>
-    <?php unset($_SESSION['flash']); ?>
-<?php endif; ?>
-
-<!-- ========== CONTENT ========== -->
-<main class="flex-grow-1 py-4">
-    <div class="container">
+        <!-- ✅ CONTENU DE LA PAGE -->
         <?= $content ?>
+        
     </div>
 </main>
 
 <!-- ========== FOOTER ========== -->
-<footer class="bg-dark text-white py-4 mt-5">
-    <div class="container">
-        <div class="row align-items-center">
-
-            <div class="col-md-4 mb-3 mb-md-0">
-                <h5 class="mb-2">
-                    <i class="fas fa-star me-2"></i>EventHub
-                </h5>
-                <p class="text-muted small mb-0">
-                    Plateforme de gestion d'ateliers et d'événements
-                </p>
-            </div>
-
-            <div class="col-md-4 text-center mb-3 mb-md-0">
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="<?= $BASE_URL ?>?controller=home&action=about" class="text-muted text-decoration-none small">
-                        <i class="fas fa-info-circle me-1"></i>À propos
-                    </a>
-                    <a href="<?= $BASE_URL ?>?controller=home&action=contact" class="text-muted text-decoration-none small">
-                        <i class="fas fa-envelope me-1"></i>Contact
-                    </a>
-                    <?php if (!$isLogged): ?>
-                        <a href="<?= $BASE_URL ?>?controller=auth&action=register" class="text-warning text-decoration-none small">
-                            <i class="fas fa-user-plus me-1"></i>S'inscrire
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="col-md-4 text-md-end">
-                <p class="mb-1">&copy; <?= date('Y') ?> EventHub</p>
-                <small class="text-muted">Développé avec 💜 par Cécilia</small>
-            </div>
-
-        </div>
+<footer class="bg-dark text-white py-4 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0">&copy; <?= date('Y') ?> EventHub - Tous droits réservés</p>
     </div>
 </footer>
 
-<!-- JS -->
+<!-- ✅ Bootstrap JS (OBLIGATOIRE pour les dropdowns) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= $BASE_URL ?>/assets/js/app.js"></script>
 
 </body>
 </html>
