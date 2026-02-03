@@ -1,8 +1,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0">🎉 Événements</h1>
-    <a href="?controller=event&action=create" class="btn btn-primary">
-        ➕ Créer un événement
-    </a>
+    
+    <!-- 🔒 BOUTON CRÉER visible uniquement pour admin -->
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <a href="?controller=event&action=create" class="btn btn-primary">
+            ➕ Créer un événement
+        </a>
+    <?php endif; ?>
 </div>
 
 <!-- Filtres par catégorie -->

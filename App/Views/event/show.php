@@ -6,16 +6,19 @@
     <h1 class="mb-0"><?= htmlspecialchars($evenement->getTitle() ?? 'Événement') ?></h1>
     
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary"
-           href="?controller=event&action=edit&id=<?= (int)$evenement->getId() ?>">
-            ✏️ Modifier
-        </a>
+        <!-- 🔒 BOUTONS MODIFIER/SUPPRIMER visibles uniquement pour admin -->
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <a class="btn btn-outline-primary"
+               href="?controller=event&action=edit&id=<?= (int)$evenement->getId() ?>">
+                ✏️ Modifier
+            </a>
 
-        <a class="btn btn-outline-danger"
-           href="?controller=event&action=delete&id=<?= (int)$evenement->getId() ?>"
-           onclick="return confirm('Supprimer cet événement ?');">
-            🗑 Supprimer
-        </a>
+            <a class="btn btn-outline-danger"
+               href="?controller=event&action=delete&id=<?= (int)$evenement->getId() ?>"
+               onclick="return confirm('Supprimer cet événement ?');">
+                🗑 Supprimer
+            </a>
+        <?php endif; ?>
 
         <a class="btn btn-secondary"
            href="?controller=event&action=index">

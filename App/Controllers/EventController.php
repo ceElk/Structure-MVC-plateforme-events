@@ -7,25 +7,18 @@ use App\Entities\EventEntity;
 
 class EventController extends Controller
 {
-    // ============================================================
-    // LISTE DES ÉVÉNEMENTS
-    // ============================================================
     public function index(): void
     {
         $model = new Event();
         
-        // ✅ Récupère le paramètre category de l'URL
         $categoryId = isset($_GET['category']) ? (int)$_GET['category'] : null;
         
-        // ✅ Si une catégorie est spécifiée, filtre par catégorie
         if ($categoryId) {
             $evenements = $model->getByTypeAndCategory('evenement', $categoryId);
         } else {
-            // Sinon, affiche TOUS les événements
             $evenements = $model->getAllByType('evenement');
         }
         
-        // ✅ Charge les catégories pour le filtre
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
@@ -37,9 +30,6 @@ class EventController extends Controller
         ]);
     }
 
-    // ============================================================
-    // DÉTAIL D'UN ÉVÉNEMENT
-    // ============================================================
     public function show(int $id): void
     {
         $model = new Event();
@@ -50,7 +40,6 @@ class EventController extends Controller
             $this->redirect('event', 'index');
         }
 
-        // ✅ Incrémenter le compteur de vues
         $model->incrementViews($id);
 
         $this->render('event/show', [
@@ -59,11 +48,11 @@ class EventController extends Controller
         ]);
     }
 
-    // ============================================================
-    // CRÉER UN ÉVÉNEMENT
-    // ============================================================
     public function create(): void
     {
+        // 🔒 PROTECTION ADMIN
+        $this->requireAdmin();
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $title = trim($_POST['title'] ?? '');
@@ -82,7 +71,6 @@ class EventController extends Controller
                 $this->redirect('event', 'create');
             }
 
-            // slug
             $slug = strtolower(trim(preg_replace(
                 '/[^A-Za-z0-9-]+/',
                 '-',
@@ -90,7 +78,6 @@ class EventController extends Controller
             )));
             $slug = trim($slug, '-');
 
-            // upload (optionnel)
             $uploadedPath = $this->uploadImage('image_file');
 
             $evenement = new EventEntity();
@@ -131,7 +118,6 @@ class EventController extends Controller
             $this->redirect('event', 'create');
         }
 
-        // ✅ Charge les catégories pour le formulaire
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
@@ -141,11 +127,11 @@ class EventController extends Controller
         ]);
     }
 
-    // ============================================================
-    // MODIFIER UN ÉVÉNEMENT
-    // ============================================================
     public function edit(int $id): void
     {
+        // 🔒 PROTECTION ADMIN
+        $this->requireAdmin();
+
         $model = new Event();
         $evenement = $model->getById($id);
 
@@ -189,7 +175,6 @@ class EventController extends Controller
                 $this->redirect('event', 'edit', ['id' => $id]);
             }
 
-            // upload image (optionnel)
             $uploadedPath = $this->uploadImage('image_file');
             if (!empty($uploadedPath)) {
                 $evenement->setImage($uploadedPath);
@@ -223,7 +208,6 @@ class EventController extends Controller
             $this->redirect('event', 'edit', ['id' => $id]);
         }
 
-        // ✅ Charge les catégories pour le formulaire
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->getAllActive();
 
@@ -234,11 +218,11 @@ class EventController extends Controller
         ]);
     }
 
-    // ============================================================
-    // SUPPRIMER UN ÉVÉNEMENT
-    // ============================================================
     public function delete(int $id): void
     {
+        // 🔒 PROTECTION ADMIN
+        $this->requireAdmin();
+
         $model = new Event();
         $evenement = $model->getById($id);
 
@@ -258,9 +242,6 @@ class EventController extends Controller
         $this->redirect('event', 'index');
     }
 
-    // ============================================================
-    // UPLOAD IMAGE
-    // ============================================================
     private function uploadImage(string $field = 'image_file'): ?string
     {
         if (!isset($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {

@@ -5,9 +5,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0">Ateliers</h1>
 
-    <a class="btn btn-primary" href="?controller=atelier&action=create">
-        ➕ Créer un atelier
-    </a>
+    <!-- 🔒 BOUTON CRÉER visible uniquement pour admin -->
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <a class="btn btn-primary" href="?controller=atelier&action=create">
+            ➕ Créer un atelier
+        </a>
+    <?php endif; ?>
 </div>
 
 <?php if (empty($ateliers)): ?>
@@ -103,16 +106,22 @@
                                 👁 Voir
                             </a>
 
-                            <a class="btn btn-outline-primary w-100 rounded-pill" href="<?= $urlEdit ?>">
-                                ✏️ Modifier
-                            </a>
+                            <!-- 🔒 BOUTONS MODIFIER visible uniquement pour admin -->
+                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                <a class="btn btn-outline-primary w-100 rounded-pill" href="<?= $urlEdit ?>">
+                                    ✏️ Modifier
+                                </a>
+                            <?php endif; ?>
                         </div>
 
-                        <a class="btn btn-outline-danger w-100 rounded-pill mt-2"
-                           href="<?= $urlDelete ?>"
-                           onclick="return confirm('Supprimer cet atelier ?');">
-                            🗑 Supprimer
-                        </a>
+                        <!-- 🔒 BOUTON SUPPRIMER visible uniquement pour admin -->
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                            <a class="btn btn-outline-danger w-100 rounded-pill mt-2"
+                               href="<?= $urlDelete ?>"
+                               onclick="return confirm('Supprimer cet atelier ?');">
+                                🗑 Supprimer
+                            </a>
+                        <?php endif; ?>
                     </div>
 
                 </article>

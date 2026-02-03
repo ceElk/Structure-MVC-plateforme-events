@@ -252,4 +252,14 @@ public function getByTypeAndCategory(string $type, int $categoryId): array
     $data = $this->fetchAll($sql, $bindings);
     return $this->toEntities($data);
 }
+
+/**
+ * Compte le nombre total d'événements
+ */
+public function countAll(): int
+{
+    $sql = "SELECT COUNT(*) as total FROM events";
+    $result = $this->fetch($sql);
+    return (int)($result->total ?? 0);
+}
 }

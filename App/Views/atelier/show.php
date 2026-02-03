@@ -6,16 +6,19 @@
     <h1 class="mb-0"><?= htmlspecialchars($atelier->getTitle() ?? 'Atelier') ?></h1>
     
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary"
-           href="?controller=atelier&action=edit&id=<?= (int)$atelier->getId() ?>">
-            ✏️ Modifier
-        </a>
+        <!-- 🔒 BOUTONS MODIFIER/SUPPRIMER visibles uniquement pour admin -->
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <a class="btn btn-outline-primary"
+               href="?controller=atelier&action=edit&id=<?= (int)$atelier->getId() ?>">
+                ✏️ Modifier
+            </a>
 
-        <a class="btn btn-outline-danger"
-           href="?controller=atelier&action=delete&id=<?= (int)$atelier->getId() ?>"
-           onclick="return confirm('Supprimer cet atelier ?');">
-            🗑 Supprimer
-        </a>
+            <a class="btn btn-outline-danger"
+               href="?controller=atelier&action=delete&id=<?= (int)$atelier->getId() ?>"
+               onclick="return confirm('Supprimer cet atelier ?');">
+                🗑 Supprimer
+            </a>
+        <?php endif; ?>
 
         <a class="btn btn-secondary"
            href="?controller=atelier&action=index">

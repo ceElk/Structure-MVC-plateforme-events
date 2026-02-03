@@ -56,4 +56,13 @@ class Category extends DbConnect
         $sql = "SELECT * FROM categories WHERE is_active = 1 ORDER BY name ASC";
         return $this->fetchAll($sql);
     }
+    /**
+ * Compte le nombre total de catégories
+ */
+public function countAll(): int
+{
+    $sql = "SELECT COUNT(*) as total FROM categories";
+    $result = $this->fetch($sql);
+    return (int)($result->total ?? 0);
+}
 }

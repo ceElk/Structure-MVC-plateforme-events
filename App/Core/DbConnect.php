@@ -77,6 +77,33 @@ abstract class DbConnect
     }
 
     /**
+     * Alias pour fetch() - pour compatibilité
+     */
+    protected function fetchOne(string $sql, array $bindings = [])
+    {
+        return $this->fetch($sql, $bindings);
+    }
+
+    /**
+     * Exécute une requête sans récupérer de résultats (INSERT/UPDATE/DELETE)
+     */
+    protected function execute(string $sql, array $bindings = []): bool
+    {
+        return $this->executeTryCatch($sql, $bindings);
+    }
+
+    /**
+     * Exécute un INSERT et retourne l'ID inséré
+     */
+    protected function executeInsert(string $sql, array $bindings = []): ?int
+    {
+        if ($this->executeTryCatch($sql, $bindings)) {
+            return (int)$this->lastInsertId();
+        }
+        return null;
+    }
+
+    /**
      * Récupère l'ID du dernier insert
      */
     protected function lastInsertId(): string
