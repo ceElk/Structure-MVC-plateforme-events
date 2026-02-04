@@ -18,3 +18,9 @@
 
 # Configuration email (identifiants SMTP)
 App/Config/email.php
+
+# smpt configuration
+.env
+.env.local
+
+
