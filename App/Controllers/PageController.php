@@ -32,22 +32,24 @@ class PageController extends Controller
                 $this->redirect('page', 'contact');
             }
 
-            // ✅ ENVOI D'EMAIL AVEC PHPMAILER
+            // ✅ CHARGEMENT DE LA CONFIG EMAIL
+            $emailConfig = require __DIR__ . '/../Config/email.php';
+
             try {
                 $mail = new PHPMailer(true);
                 
-                // Configuration SMTP (Gmail)
+                // Configuration SMTP depuis le fichier
                 $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
+                $mail->Host = $emailConfig['smtp_host'];
                 $mail->SMTPAuth = true;
-                $mail->Username = 'cecilia.elkrieff@gmail.com';
-                $mail->Password = 'vnve rfyv oflb vsgm';
+                $mail->Username = $emailConfig['smtp_username'];
+                $mail->Password = $emailConfig['smtp_password'];
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
+                $mail->Port = $emailConfig['smtp_port'];
                 
                 // Expéditeur et destinataire
                 $mail->setFrom($email, $name);
-                $mail->addAddress('cecilia.elkrieff@gmail.com');
+                $mail->addAddress($emailConfig['smtp_to']);
                 $mail->addReplyTo($email, $name);
                 
                 // Contenu
