@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 class PageController extends Controller
 {
     public function about(): void
@@ -24,13 +27,46 @@ class PageController extends Controller
                 $this->redirect('page', 'contact');
             }
 
-            if (!$this->validateEmail($email)) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->setFlash('error', 'Format d\'email invalide.');
                 $this->redirect('page', 'contact');
             }
 
-            // TODO: Envoyer l'email (pour l'instant on simule)
-            $this->setFlash('success', 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais. ✅');
+            // ✅ ENVOI D'EMAIL AVEC PHPMAILER
+            try {
+                $mail = new PHPMailer(true);
+                
+                // Configuration SMTP (Gmail)
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'cecilia.elkrieff@gmail.com';
+                $mail->Password = 'vnve rfyv oflb vsgm';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+                
+                // Expéditeur et destinataire
+                $mail->setFrom($email, $name);
+                $mail->addAddress('cecilia.elkrieff@gmail.com');
+                $mail->addReplyTo($email, $name);
+                
+                // Contenu
+                $mail->CharSet = 'UTF-8';
+                $mail->Subject = '[EventHub Contact] ' . $subject;
+                $mail->Body = "Nouveau message de contact EventHub\n\n";
+                $mail->Body .= "Nom: $name\n";
+                $mail->Body .= "Email: $email\n";
+                $mail->Body .= "Sujet: $subject\n\n";
+                $mail->Body .= "Message:\n$message\n\n";
+                $mail->Body .= "---\nDate: " . date('d/m/Y H:i:s');
+                
+                $mail->send();
+                
+                $this->setFlash('success', 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais. ✅');
+            } catch (Exception $e) {
+                $this->setFlash('error', 'Erreur lors de l\'envoi du message. Veuillez réessayer plus tard.');
+            }
+            
             $this->redirect('page', 'contact');
         }
 

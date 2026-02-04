@@ -387,14 +387,130 @@ function isActive(string $controller, string $action = 'index'): string {
 </main>
 
 <!-- ========== FOOTER ========== -->
-<footer class="bg-dark text-white py-4 mt-auto">
-    <div class="container text-center">
-        <p class="mb-0">&copy; <?= date('Y') ?> EventHub - Tous droits réservés</p>
+<footer class="bg-dark text-white py-5 mt-auto">
+    <div class="container">
+        <div class="row g-4">
+            <!-- À propos -->
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-calendar-star me-2" style="color: #d4af37;"></i>
+                    EventHub
+                </h5>
+                <p class="text-muted">
+                    Votre plateforme de découverte et de réservation d'événements et d'ateliers.
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-outline-light btn-sm">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+<!-- Liens rapides -->
+<div class="col-md-4">
+    <h5 class="fw-bold mb-3">Liens rapides</h5>
+    <ul class="list-unstyled">
+        <li class="mb-2">
+            <a href="?controller=event&action=index" class="text-decoration-none" style="color: #b8b8b8;">
+                <i class="fas fa-chevron-right me-2"></i>Événements
+            </a>
+        </li>
+        <li class="mb-2">
+            <a href="?controller=atelier&action=index" class="text-decoration-none" style="color: #b8b8b8;">
+                <i class="fas fa-chevron-right me-2"></i>Ateliers
+            </a>
+        </li>
+        <li class="mb-2">
+            <a href="?controller=page&action=about" class="text-decoration-none" style="color: #b8b8b8;">
+                <i class="fas fa-chevron-right me-2"></i>À propos
+            </a>
+        </li>
+        <li class="mb-2">
+            <a href="?controller=page&action=contact" class="text-decoration-none" style="color: #b8b8b8;">
+                <i class="fas fa-chevron-right me-2"></i>Contact
+            </a>
+        </li>
+    </ul>
+</div>
+
+            <!-- Newsletter -->
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">Newsletter</h5>
+                <p class="text-muted">
+                    Restez informé des nouveaux événements !
+                </p>
+                <form id="newsletterForm">
+                    <div class="input-group mb-3">
+                        <input type="email" 
+                               class="form-control" 
+                               placeholder="Votre email"
+                               id="newsletterEmail"
+                               required>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+                <div id="newsletterMessage"></div>
+            </div>
+        </div>
+
+        <hr class="my-4 border-secondary">
+
+        <div class="text-center">
+            <p class="mb-0 text-muted">
+                &copy; <?= date('Y') ?> EventHub - Tous droits réservés
+            </p>
+        </div>
     </div>
 </footer>
 
+<!-- Script Newsletter -->
+<script>
+document.getElementById('newsletterForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('newsletterEmail').value;
+    const messageDiv = document.getElementById('newsletterMessage');
+    
+    // Simulation d'envoi
+    messageDiv.innerHTML = '<div class="alert alert-success alert-sm mt-2">✅ Merci ! Vous êtes inscrit à notre newsletter.</div>';
+    document.getElementById('newsletterEmail').value = '';
+    
+    setTimeout(() => {
+        messageDiv.innerHTML = '';
+    }, 5000);
+});
+</script>
+
 <!-- ✅ Bootstrap JS (OBLIGATOIRE pour les dropdowns) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    /* ✅ Fix footer qui se fait écraser */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
 
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+/* ✅ S'assurer que les liens du footer sont cliquables */
+footer a {
+    position: relative;
+    z-index: 10;
+}
+</style>
 </body>
 </html>

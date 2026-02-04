@@ -11,5 +11,7 @@
             "name": "cat composer.json"
         }
     ],
-    "require": {}
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
 }

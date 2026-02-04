@@ -1,0 +1,92 @@
+
+# 🎉 EventHub - Plateforme de gestion d'ateliers et d'événements
+
+![PHP](https://img.shields.io/badge/PHP-8.x-777BB4?style=flat&logo=php)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat&logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
+## 📖 Présentation du projet
+
+**EventHub** est une plateforme web dynamique développée en **PHP orienté objet** permettant la gestion complète d'ateliers et d'événements. Le projet a été réalisé **sans framework** afin de garantir une compréhension approfondie du fonctionnement interne d'une application web moderne.
+
+### Contexte pédagogique
+
+Projet réalisé dans le cadre d'une formation de développeur web, avec pour objectif de démontrer la maîtrise :
+- De l'architecture MVC
+- De la programmation orientée objet en PHP
+- De la gestion d'une base de données relationnelle
+- De la sécurisation d'une application web
+- Du versionnement Git professionnel
+
+---
+
+## ✨ Fonctionnalités principales
+
+### 👥 Pour les visiteurs
+- ✅ Consultation de la liste des événements et ateliers
+- ✅ Filtrage par catégories (Art, Sport, Musique, Technologie, Cuisine, etc.)
+- ✅ Recherche globale (par titre, ville, description)
+- ✅ Filtres avancés (prix, date, ville)
+- ✅ Consultation des détails d'un événement/atelier
+- ✅ Page "À propos"
+- ✅ Page "Contact"
+
+### 🔐 Pour les utilisateurs connectés
+- ✅ Inscription et connexion sécurisées
+- ✅ Réservation de places pour les événements
+- ✅ Gestion de ses réservations personnelles
+- ✅ Annulation de réservations
+- ✅ Consultation de l'historique des réservations
+- ✅ Modification de son profil
+- ✅ Changement de mot de passe
+
+### 👨‍💼 Pour les administrateurs
+- ✅ Gestion complète des événements (CRUD)
+- ✅ Gestion complète des ateliers (CRUD)
+- ✅ Gestion des catégories
+- ✅ Gestion des utilisateurs (visualisation, modification, suppression)
+- ✅ Consultation de toutes les réservations
+- ✅ Dashboard avec statistiques en temps réel
+- ✅ Upload et gestion d'images
+
+---
+
+## 🛠️ Technologies utilisées
+
+- **Backend** : PHP 8.x (Programmation Orientée Objet)
+- **Architecture** : MVC (Model-View-Controller) fait main
+- **Base de données** : MySQL 8.0 / MariaDB
+- **Frontend** : HTML5, CSS3, Bootstrap 5.3
+- **JavaScript** : Vanilla JS (validation côté client)
+- **Accès BDD** : PDO avec requêtes préparées
+- **Sécurité** : 
+  - Hashage des mots de passe (bcrypt)
+  - Protection XSS (htmlspecialchars)
+  - Protection CSRF (vérification des méthodes HTTP)
+  - Validation des données côté serveur
+- **Versionnement** : Git / GitHub
+
+---
+
+## 📋 Prérequis techniques
+
+Avant d'installer le projet, assurez-vous d'avoir :
+
+- **PHP** >= 8.0
+- **MySQL** >= 8.0 ou **MariaDB** >= 10.5
+- **Apache** ou **Nginx** (avec mod_rewrite activé)
+- **Git** >= 2.0
+
+### Environnements recommand
+- **MAMP** (Mac)
+- **XAMPP** (Windows/Mac/Linux)
+- **WAMP** (Windows)
+- **Laragon** (Windows)
+
+---
+
+## 🚀 Installation
+
+### 1. Cloner le dépôt
+# Plateforme Events - Structure MVC
