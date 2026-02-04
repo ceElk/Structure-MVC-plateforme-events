@@ -1,5 +1,3 @@
-# Plateforme Events - Structure MVC
-
 # 🎉 EventHub - Plateforme de gestion d'ateliers et d'événements
 
 ![PHP](https://img.shields.io/badge/PHP-8.x-777BB4?style=flat&logo=php)
@@ -9,7 +7,7 @@
 
 ## 📖 Présentation du projet
 
-*Plateforme-events** est une plateforme web dynamique développée en **PHP orienté objet** permettant la gestion complète d'ateliers et d'événements. Le projet a été réalisé **sans framework** afin de garantir une compréhension approfondie du fonctionnement interne d'une application web moderne.
+**EventHub** est une plateforme web dynamique développée en **PHP orienté objet** permettant la gestion complète d'ateliers et d'événements. Le projet a été réalisé **sans framework** afin de garantir une compréhension approfondie du fonctionnement interne d'une application web moderne.
 
 ### Contexte pédagogique
 
@@ -31,7 +29,7 @@ Projet réalisé dans le cadre d'une formation de développeur web, avec pour ob
 - ✅ Filtres avancés (prix, date, ville)
 - ✅ Consultation des détails d'un événement/atelier
 - ✅ Page "À propos"
-- ✅ Page "Contact"
+- ✅ Page "Contact" avec envoi d'emails
 
 ### 🔐 Pour les utilisateurs connectés
 - ✅ Inscription et connexion sécurisées
@@ -47,7 +45,7 @@ Projet réalisé dans le cadre d'une formation de développeur web, avec pour ob
 - ✅ Gestion complète des ateliers (CRUD)
 - ✅ Gestion des catégories
 - ✅ Gestion des utilisateurs (visualisation, modification, suppression)
-- ✅ Consultation de toutes les réservations
+- ✅ Consultation de toutes les réservations avec filtres
 - ✅ Dashboard avec statistiques en temps réel
 - ✅ Upload et gestion d'images
 
@@ -61,6 +59,7 @@ Projet réalisé dans le cadre d'une formation de développeur web, avec pour ob
 - **Frontend** : HTML5, CSS3, Bootstrap 5.3
 - **JavaScript** : Vanilla JS (validation côté client)
 - **Accès BDD** : PDO avec requêtes préparées
+- **Emails** : PHPMailer (envoi via SMTP)
 - **Sécurité** : 
   - Hashage des mots de passe (bcrypt)
   - Protection XSS (htmlspecialchars)
@@ -76,6 +75,7 @@ Avant d'installer le projet, assurez-vous d'avoir :
 
 - **PHP** >= 8.0
 - **MySQL** >= 8.0 ou **MariaDB** >= 10.5
+- **Composer** (pour installer PHPMailer)
 - **Apache** ou **Nginx** (avec mod_rewrite activé)
 - **Git** >= 2.0
 
@@ -92,42 +92,62 @@ Avant d'installer le projet, assurez-vous d'avoir :
 
 ### 1. Cloner le dépôt
 ```bash
-git clone https://github.com/VOTRE_USERNAME/plateforme-events.git
-cd plateforme-events
+git clone https://github.com/ceElk/Structure-MVC-plateforme-events.git
+cd Structure-MVC-plateforme-events
 ```
 
-### 2. Créer la base de données
+### 2. Installer les dépendances
+```bash
+composer install
+```
+
+### 3. Créer la base de données
 
 **Option A : Via phpMyAdmin**
 1. Ouvrez phpMyAdmin
-2. Créez une nouvelle base de données nommée `eventhub`
-3. Importez le fichier `database/eventhub.sql`
+2. Créez une nouvelle base de données nommée `plateforme-events`
+3. Importez le fichier `database/plateforme-events.sql`
 
 **Option B : Via le terminal**
 ```bash
 mysql -u root -p
-CREATE DATABASE eventhub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE eventhub;
-SOURCE database/eventhub.sql;
+CREATE DATABASE `plateforme-events` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `plateforme-events`;
+SOURCE database/plateforme-events.sql;
 EXIT;
 ```
 
-### 3. Configurer la connexion à la base de données
+### 4. Configurer la connexion à la base de données
 
 Modifiez le fichier `App/Core/DbConnect.php` avec vos identifiants :
 ```php
 private const DB_HOST = 'localhost';
-private const DB_NAME = 'eventhub';
+private const DB_NAME = 'plateforme-events';
 private const DB_USER = 'root';
 private const DB_PASS = ''; // Votre mot de passe MySQL
 ```
 
-### 4. Lancer le serveur
+### 5. Configurer l'envoi d'emails (optionnel)
+
+Pour activer l'envoi d'emails via le formulaire de contact :
+```bash
+cp App/Config/email.example.php App/Config/email.php
+```
+
+Modifiez `App/Config/email.php` avec vos identifiants SMTP Gmail :
+```php
+'smtp_username' => 'votre.email@gmail.com',
+'smtp_password' => 'votre_mot_de_passe_app',
+```
+
+**Pour Gmail, créez un mot de passe d'application :** https://myaccount.google.com/apppasswords
+
+### 6. Lancer le serveur
 
 **Avec MAMP/XAMPP/WAMP :**
 - Placez le projet dans le dossier `htdocs`
 - Démarrez Apache et MySQL
-- Accédez à `http://localhost:8888/plateforme-events/`
+- Accédez à `http://localhost:8888/plateforme-events/App/public/`
 
 **Avec le serveur PHP intégré :**
 ```bash
@@ -164,7 +184,8 @@ plateforme-events/
 │   │   ├── ReservationController.php
 │   │   ├── UserController.php
 │   │   ├── AdminController.php
-│   │   └── SearchController.php
+│   │   ├── SearchController.php
+│   │   └── PageController.php
 │   ├── Models/               # Modèles (interaction BDD)
 │   │   ├── User.php
 │   │   ├── Role.php
@@ -188,6 +209,8 @@ plateforme-events/
 │   │   ├── admin/
 │   │   ├── search/
 │   │   └── page/
+│   ├── Config/               # Configuration
+│   │   └── email.example.php
 │   ├── Core/                 # Classes du noyau
 │   │   ├── Router.php        # Routeur
 │   │   └── DbConnect.php     # Connexion PDO
@@ -200,8 +223,11 @@ plateforme-events/
 │       │   └── images/
 │       └── uploads/          # Images uploadées
 ├── database/
-│   ├── eventhub.sql          # Structure de la BDD
-│   └── test_data.sql         # Données de test
+│   ├── plateforme-events.sql # Structure complète de la BDD
+│   └── README.md
+├── vendor/                   # Dépendances Composer
+├── composer.json
+├── .gitignore
 └── README.md
 ```
 
@@ -212,28 +238,25 @@ plateforme-events/
 ### Tables principales
 
 #### `users`
-Gestion des utilisateurs (admins et utilisateurs)
-- id, username, email, password (hashé)
+Gestion des utilisateurs
+- id, username, email, password (hashé bcrypt)
 - first_name, last_name, phone
 - role_id, is_active, email_verified
 - last_login, created_at, updated_at
 
 #### `roles`
 Gestion des rôles
-- id, name (admin, user, visitor)
+- id, name (admin, user)
 - description, created_at
 
 #### `events`
 Gestion des événements et ateliers
 - id, title, slug, type (atelier/evenement)
 - description, short_description
-- date_start, date_end, duration
+- date_start, time_start, date_end
 - location, location_city, location_postal_code
-- is_online, online_link
-- capacity, available_spots, min_participants
-- price, currency, image
-- category_id, organizer_id, status
-- is_featured, views_count
+- capacity, available_spots, price
+- image, category_id, status
 - created_at, updated_at
 
 #### `categories`
@@ -249,8 +272,8 @@ Gestion des réservations
 - status (pending, confirmed, cancelled, attended)
 - number_of_seats, amount_paid
 - payment_status, payment_method
-- reserved_at, confirmed_at, cancelled_at
-- cancellation_reason, user_notes, admin_notes
+- reserved_at, cancelled_at, cancellation_reason
+- user_notes, admin_notes
 - created_at, updated_at
 
 ---
@@ -264,10 +287,11 @@ Le projet intègre plusieurs couches de sécurité :
 - ✅ **Hashage bcrypt** : Mots de passe sécurisés
 - ✅ **htmlspecialchars()** : Protection XSS sur toutes les sorties
 - ✅ **Validation côté serveur** : Vérification de toutes les entrées utilisateur
+- ✅ **Configuration sensible** : Identifiants SMTP dans fichier ignoré par Git
 
 ### Contrôle d'accès
 - ✅ **Gestion des sessions** : Authentification sécurisée
-- ✅ **Protection des routes** : Vérification des rôles
+- ✅ **Protection des routes** : Vérification des rôles (admin/user)
 - ✅ **Méthodes HTTP** : POST pour les actions sensibles
 - ✅ **Vérifications métier** : Empêche les actions interdites
 
@@ -279,96 +303,47 @@ Le projet intègre plusieurs couches de sécurité :
 
 ---
 
-## 📸 Captures d'écran
-
-### Page d'accueil
-![Page d'accueil](docs/screenshots/home.png)
-
-### Liste des événements
-![Liste des événements](docs/screenshots/events.png)
-
-### Détail d'un événement
-![Détail](docs/screenshots/event-detail.png)
-
-### Dashboard admin
-![Dashboard](docs/screenshots/admin-dashboard.png)
-
----
-
 ## 🎯 Fonctionnalités avancées
 
 ### Système de recherche
-- Recherche globale par mots-clés
-- Filtrage par catégorie
+- Recherche globale par mots-clés (titre, description, ville)
+- Filtrage par catégorie dynamique
 - Filtrage par ville
 - Filtrage par prix (min/max)
 - Filtrage par date
+- Compteur de résultats
 
 ### Gestion des réservations
-- Numéro de réservation unique
-- Vérification des places disponibles
+- Numéro de réservation unique (format: RES-YYYY-XXXXX)
+- Vérification des places disponibles en temps réel
 - Mise à jour automatique des stocks
 - Empêche les doublons de réservation
-- Système d'annulation avec remise en stock
+- Système d'annulation avec remise en stock automatique
+- Historique complet des réservations
 
 ### Interface responsive
 - Design adaptatif (mobile, tablette, desktop)
-- Navigation intuitive
+- Navigation intuitive avec dropdown dynamiques
 - Messages flash pour les retours utilisateur
-- Formulaires avec validation en temps réel
-
----
-
-## 🐛 Débogage
-
-### Activer l'affichage des erreurs
-
-En cas de problème, activez l'affichage des erreurs dans `App/public/index.php` :
-```php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-```
-
-### Vérifier les logs Apache/PHP
-
-**MAMP** :
-tail -f /Applications/MAMP/logs/php_error.log
-```
-
-**XAMPP** :
-tail -f C:/xampp/apache/logs/error.log
-```
-
----
-
-## 🚧 Améliorations futures
-
-- [ ] Système de paiement en ligne (Stripe/PayPal)
-- [ ] Envoi d'emails de confirmation
-- [ ] Export PDF des réservations
-- [ ] Système de notation et commentaires
-- [ ] Notifications push
-- [ ] API REST pour applications mobiles
-- [ ] Multi-langues (i18n)
-- [ ] Calendrier interactif
-- [ ] Statistiques avancées (graphiques)
+- Formulaires avec validation
+- Thème noir/or professionnel
 
 ---
 
 ## 📝 Versionnement Git
 
-Le projet utilise Git avec une branche unique `main`. Chaque fonctionnalité majeure fait l'objet d'un commit explicite :
+Le projet utilise Git avec une branche unique `main`. 
 
-# Exemples de messages de commit
+### Historique des commits
+```
+4a25f75 update project systeme de reservation ok
+343f955 site fonctionnel sauf user role pas encore fait
+f50b945 Update project
+39d792a Fix navbar links + base url + theme
+dcdfed2 feat: Plateforme événements MVC complète avec upload d'images et thème doré/noir
+01c7a49 Initial commit
+```
 
-- 4a25f75 update project systeme de reservation ok
-- 343f955 site fonctionnel sauf user role pas encore fait
-- f50b945 Update project
-- 39d792a Fix navbar links + base url + theme
-- dcdfed2 feat: Plateforme événements MVC complète avec upload d'images et thème doré/noir
-- 01c7a49 Initial commit**
-
----
 ### Principales étapes du développement
 
 1. **Initialisation** : Mise en place du dépôt GitHub et structure initiale
@@ -377,6 +352,8 @@ Le projet utilise Git avec une branche unique `main`. Chaque fonctionnalité maj
 4. **Upload d'images** : Système d'upload sécurisé pour les événements
 5. **Authentification** : Système de connexion/inscription avec rôles (admin/user)
 6. **Système de réservation** : Gestion complète des réservations avec vérification des places
+7. **Pages statiques** : À propos, Contact avec envoi d'emails
+8. **Sécurisation** : Protection des identifiants, validation des données
 
 ### Convention de nommage des commits
 
@@ -385,32 +362,36 @@ Le projet suit une convention de commits clairs et descriptifs :
 - `fix:` pour les corrections de bugs
 - `update:` pour les mises à jour générales
 - `docs:` pour la documentation
+- `security:` pour les améliorations de sécurité
+
+---
 
 ## 👨‍💻 Auteur
 
 **Cécilia** - Développeuse Web Junior  
-[GitHub](https://github.com/ceElk) | [LinkedIn](https://linkedin.com/in/ceElk)
+[GitHub](https://github.com/ceElk) | [LinkedIn](https://linkedin.com/in/cecilia-elkrieff)
 
 ---
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est sous licence MIT.
 
 ---
 
 ## 🙏 Remerciements
 
 - Bootstrap pour le framework CSS
+- Font Awesome pour les icônes
+- PHPMailer pour l'envoi d'emails
 - La communauté PHP pour la documentation
-
 
 ---
 
 ## 📞 Support
 
 Pour toute question ou problème :
-- Ouvrir une [issue](https://github.com/ceElk/plateforme-events/issues)
+- Ouvrir une [issue](https://github.com/ceElk/Structure-MVC-plateforme-events/issues)
 - Contacter par email : cecilia.elkrieff@gmail.com
 
 ---
