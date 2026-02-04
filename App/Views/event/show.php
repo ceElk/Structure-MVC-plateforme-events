@@ -39,7 +39,7 @@
 <?php endif; ?>
 
 <!-- INFORMATIONS -->
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="row g-4">
             <div class="col-md-6">
@@ -100,3 +100,48 @@
         </div>
     </div>
 </div>
+
+<!-- ✅ BOUTON RÉSERVER (visible uniquement pour les utilisateurs connectés NON ADMIN) -->
+<?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')): ?>
+    <?php if ($evenement->getAvailableSpots() > 0): ?>
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body text-center p-4">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-ticket-alt me-2 text-primary"></i>
+                    Réservez votre place maintenant !
+                </h4>
+                <p class="text-muted mb-4">
+                    Il reste <strong><?= (int)$evenement->getAvailableSpots() ?></strong> place(s) disponible(s)
+                </p>
+                <a href="?controller=reservation&action=create&eventId=<?= (int)$evenement->getId() ?>" 
+                   class="btn btn-primary btn-lg">
+                    <i class="fas fa-check-circle me-2"></i> Réserver maintenant
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-danger text-center">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Complet !</strong> Il n'y a plus de places disponibles pour cet événement.
+        </div>
+    <?php endif; ?>
+<?php elseif (!isset($_SESSION['user_id'])): ?>
+    <!-- Si non connecté, bouton pour se connecter -->
+    <div class="card border-0 shadow-sm bg-light">
+        <div class="card-body text-center p-4">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-lock me-2 text-warning"></i>
+                Connectez-vous pour réserver
+            </h4>
+            <p class="text-muted mb-4">
+                Vous devez être connecté pour réserver une place à cet événement.
+            </p>
+            <a href="?controller=auth&action=login" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+            </a>
+            <a href="?controller=auth&action=register" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i> S'inscrire
+            </a>
+        </div>
+    </div>
+<?php endif; ?>

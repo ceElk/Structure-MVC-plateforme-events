@@ -20,6 +20,7 @@ class HomeController extends Controller
         $totalEvents = $eventModel->countPublishedEvents();
         $featuredEvents = $eventModel->getFeaturedEvents(3); // Retourne des EventEntity[]
         
+        
         $this->render('home/index', [
             'title' => 'EventHub - Découvrez nos ateliers et événements',
             'page' => 'accueil',

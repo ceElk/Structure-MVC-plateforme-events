@@ -27,7 +27,7 @@
     </div>
 </div>
 
-<!-- ✅ IMAGE CORRIGÉE (sans /uploads/, juste le chemin complet de la BDD) -->
+<!-- Image -->
 <?php if ($atelier->getImage()): ?>
     <div class="mb-4" style="border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         <img src="<?= $BASE_URL ?>/<?= htmlspecialchars($atelier->getImage()) ?>" 
@@ -39,7 +39,7 @@
 <?php endif; ?>
 
 <!-- INFORMATIONS -->
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="row g-4">
             <div class="col-md-6">
@@ -100,3 +100,48 @@
         </div>
     </div>
 </div>
+
+<!-- ✅ BOUTON RÉSERVER (visible uniquement pour les utilisateurs connectés NON ADMIN) -->
+<?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')): ?>
+    <?php if ($atelier->getAvailableSpots() > 0): ?>
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body text-center p-4">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-ticket-alt me-2 text-warning"></i>
+                    Réservez votre place maintenant !
+                </h4>
+                <p class="text-muted mb-4">
+                    Il reste <strong><?= (int)$atelier->getAvailableSpots() ?></strong> place(s) disponible(s)
+                </p>
+                <a href="?controller=reservation&action=create&eventId=<?= (int)$atelier->getId() ?>" 
+                   class="btn btn-warning btn-lg">
+                    <i class="fas fa-check-circle me-2"></i> Réserver maintenant
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-danger text-center">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Complet !</strong> Il n'y a plus de places disponibles pour cet atelier.
+        </div>
+    <?php endif; ?>
+<?php elseif (!isset($_SESSION['user_id'])): ?>
+    <!-- Si non connecté, bouton pour se connecter -->
+    <div class="card border-0 shadow-sm bg-light">
+        <div class="card-body text-center p-4">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-lock me-2 text-warning"></i>
+                Connectez-vous pour réserver
+            </h4>
+            <p class="text-muted mb-4">
+                Vous devez être connecté pour réserver une place à cet atelier.
+            </p>
+            <a href="?controller=auth&action=login" class="btn btn-warning btn-lg me-2">
+                <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+            </a>
+            <a href="?controller=auth&action=register" class="btn btn-outline-warning btn-lg">
+                <i class="fas fa-user-plus me-2"></i> S'inscrire
+            </a>
+        </div>
+    </div>
+<?php endif; ?>

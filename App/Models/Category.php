@@ -65,4 +65,17 @@ public function countAll(): int
     $result = $this->fetch($sql);
     return (int)($result->total ?? 0);
 }
+/**
+ * Compte les événements par catégorie
+ */
+public function countEventsByCategory(int $categoryId): int
+{
+    $sql = "SELECT COUNT(*) as total 
+            FROM events 
+            WHERE category_id = :category_id 
+            AND status = 'published'";
+    
+    $result = $this->fetch($sql, [':category_id' => $categoryId]);
+    return (int)($result->total ?? 0);
+}
 }
