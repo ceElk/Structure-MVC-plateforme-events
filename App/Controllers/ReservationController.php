@@ -116,8 +116,10 @@ public function create(): void
         $this->render('reservation/my-reservations', [
             'title' => 'Mes réservations',
             'reservations' => $reservations
+            // nom => valeur
         ]);
-    }
+    }// ça dit: "Charge le fichier App/Views/reservation/my-reservations.php
+//et donne-lui accès à une variable $reservations qui contient $reservations" qui sera utilisées dans la vue "admin/reservations"
 
     // ============================================================
     // ANNULER UNE RÉSERVATION
@@ -203,6 +205,7 @@ public function create(): void
         $this->render('reservation/show', [
             'title' => 'Détails de la réservation',
             'reservation' => $reservation
+            
         ]);
     }
 }

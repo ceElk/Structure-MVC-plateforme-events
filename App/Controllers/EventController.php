@@ -186,7 +186,7 @@ class EventController extends Controller
             if (!empty($uploadedPath)) {
                 $evenement->setImage($uploadedPath);
             }
-
+// on met les settter dans le controleur car le model ne odit pas faire de la logique metier 
             $evenement
                 ->setTitle($title)
                 ->setSlug($slug)

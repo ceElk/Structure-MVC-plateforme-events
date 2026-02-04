@@ -17,6 +17,7 @@ $data['BASE_URL'] = '/coursPhp2025/POO/plateforme-events';
         
         // Extrait les variables du tableau pour les rendre accessibles dans la vue
         extract($data);
+        //    // Résultat : $reservations = $data['reservations'];
 
         // Démarre le buffer de sortie
         ob_start();

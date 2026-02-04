@@ -129,4 +129,20 @@ class AdminController extends Controller
 
         $this->redirect('admin', 'users');
     }
+
+    /**
+ * Voir toutes les réservations
+ */
+public function reservations(): void
+{
+    $this->requireAdmin();
+
+    $reservationModel = new \App\Models\Reservation();
+    $reservations = $reservationModel->getAll();
+
+    $this->render('admin/reservations', [
+        'title' => 'Toutes les réservations',
+        'reservations' => $reservations
+    ]);
+}
 }
