@@ -332,12 +332,10 @@ ini_set('display_errors', 1);
 ### Vérifier les logs Apache/PHP
 
 **MAMP** :
-```bash
 tail -f /Applications/MAMP/logs/php_error.log
 ```
 
 **XAMPP** :
-```bash
 tail -f C:/xampp/apache/logs/error.log
 ```
 
@@ -363,12 +361,12 @@ Le projet utilise Git avec une branche unique `main`. Chaque fonctionnalité maj
 
 # Exemples de messages de commit
 
-4a25f75 update project systeme de reservation ok
-343f955 site fonctionnel sauf user role pas encore fait
-f50b945 Update project
-39d792a Fix navbar links + base url + theme
-dcdfed2 feat: Plateforme événements MVC complète avec upload d'images et thème doré/noir
-01c7a49 Initial commit**
+- 4a25f75 update project systeme de reservation ok
+- 343f955 site fonctionnel sauf user role pas encore fait
+- f50b945 Update project
+- 39d792a Fix navbar links + base url + theme
+- dcdfed2 feat: Plateforme événements MVC complète avec upload d'images et thème doré/noir
+- 01c7a49 Initial commit**
 
 ---
 ### Principales étapes du développement
