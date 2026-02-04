@@ -117,14 +117,6 @@ SOURCE database/plateforme-events.sql;
 EXIT;
 ```
 
-### 4. Configurer la connexion à la base de données
-
-Modifiez le fichier `App/Core/DbConnect.php` avec vos identifiants :
-```php
-private const DB_HOST = 'localhost';
-private const DB_NAME = 'plateforme-events';
-private const DB_USER = 'root';
-private const DB_PASS = ''; // Votre mot de passe MySQL
 ```
 
 ### 5. Configurer l'envoi d'emails (optionnel)
