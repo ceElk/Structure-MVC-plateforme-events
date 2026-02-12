@@ -9,7 +9,15 @@ error_reporting(E_ALL);*/
 // pour les log d'erreur commande terminal:tail -f /Applications/MAMP/logs/php_error.log
 // ✅ AFFICHER LES ERREURS
 
+// ✅ Démarrer la session UNE SEULE FOIS
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}/*
 
+// ✅ DEBUG : Affiche les sessions
+echo '<pre style="background:#000;color:#0f0;padding:10px;">';
+var_dump($_SESSION);
+echo '</pre>';*/
 // ✅ AFFICHER LES ERREURS (développement uniquement)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -17,10 +25,7 @@ ini_set('display_errors', 1);
 // ✅ Autoloader Composer (PHPMailer) - DOIT ÊTRE AVANT session_start()
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-// ✅ Démarrer la session UNE SEULE FOIS
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 
 // ✅ Définir la constante BASE_URL
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';

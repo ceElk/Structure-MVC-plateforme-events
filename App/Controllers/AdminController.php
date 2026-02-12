@@ -145,4 +145,63 @@ public function reservations(): void
         'reservations' => $reservations
     ]);
 }
+/**
+ * Recherche d'utilisateurs via AJAX = MOTEUR DE RECHERCHE
+ */
+public function searchUsersAjax(): void
+{
+    // 🔒 Vérifie que l'utilisateur est admin
+    // Sinon accès interdit à cette fonction
+    if (!isset($_SESSION['admin'])) {
+        http_response_code(403); // Code HTTP "Forbidden"
+        
+        // Réponse JSON envoyée au JavaScript
+        echo json_encode([
+            'success' => false,
+            'message' => 'Accès refusé'
+        ]);
+        
+        exit; // Stop le script immédiatement
+    }
+
+    // 🔎 Récupération des paramètres envoyés en GET (AJAX)
+    // trim() enlève les espaces avant/après
+    $query = isset($_GET['query']) ? trim($_GET['query']) : '';
+    $role = isset($_GET['role']) ? trim($_GET['role']) : '';
+    
+    // 📦 Instancie le modèle User (accès base de données)
+    $model = new \App\Models\User();
+    
+    // 🔎 Recherche utilisateurs selon le texte + rôle
+    // Cette méthode doit être dans ton modèle User
+    $users = $model->search($query, $role);
+    
+    // 📊 Préparation des données pour JSON
+    // On transforme les objets User en tableau simple
+    $data = [];
+    
+    foreach ($users as $user) {
+        $data[] = [
+            'id' => $user->getId(),
+            'username' => $user->getUsername(),
+            'email' => $user->getEmail(),
+            'role_name' => $user->getRoleName(),
+            
+            // Format personnalisé date
+            'created_at' => $user->getFormattedCreatedAt('d/m/Y')
+        ];
+    }
+    
+    // ✅ Code HTTP succès
+    http_response_code(200);
+    
+    // 📤 Envoi JSON au JavaScript
+    echo json_encode([
+        'success' => true,
+        'data' => $data
+    ]);
+    
+    exit; // Toujours couper après JSON
+}
+
 }

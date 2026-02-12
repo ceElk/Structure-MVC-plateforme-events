@@ -163,16 +163,20 @@
                     </div>
 
                     <div class="card-footer bg-white border-0 pt-0 pb-4 px-3">
-                        <div class="d-flex gap-2">
-                            <a class="btn btn-outline-dark w-100 rounded-pill" href="<?= $urlShow ?>">
-                                👁 Voir
-                            </a>
+    <div class="d-flex gap-2">
+        <button type="button" 
+                class="btn btn-outline-dark w-100 rounded-pill" 
+                onclick="openAtelierModal(<?= $atelier->getId() ?>)">
+            👁 Voir
+        </button>
 
                             <!-- 🔒 BOUTONS MODIFIER visible uniquement pour admin -->
                             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                                <a class="btn btn-outline-primary w-100 rounded-pill" href="<?= $urlEdit ?>">
-                                    ✏️ Modifier
-                                </a>
+                                <button type="button" 
+        class="btn-edit" 
+        onclick="openEditAtelierModal(<?= $atelier->getId() ?>)">
+    ✏️ Modifier
+</button>
                             <?php endif; ?>
                         </div>
 
@@ -193,3 +197,70 @@
     </div>
 
 <?php endif; ?>
+
+<!-- ========== MODALE DÉTAILS ATELIER ========== -->
+<div class="modal fade" id="atelierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #d4af37;">
+                <h5 class="modal-title" id="atelierModalTitle">
+                    <i class="fas fa-spinner fa-spin"></i> Chargement...
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="atelierModalBody">
+                <!-- Spinner de chargement -->
+                <div class="text-center py-5">
+                    <div class="spinner-border" style="color: #d4af37;" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Chargement des détails...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <a href="#" id="atelierReserveBtn" class="btn btn-primary" style="display:none; background-color: #d4af37; border-color: #d4af37;">
+                    <i class="fas fa-ticket-alt me-2"></i> Réserver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script modale atelier -->
+<script src="App/public/assets/js/atelier-modal.js"></script>
+
+<!-- ✅ Script modale édition atelier -->
+<script src="App/public/assets/js/atelier-edit-modal.js"></script>
+
+
+<!-- ========== MODALE MODIFICATION ATELIER ========== -->
+<div class="modal fade" id="editAtelierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #d4af37;">
+                <h5 class="modal-title" id="editAtelierModalTitle">
+                    <i class="fas fa-spinner fa-spin"></i> Chargement...
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editAtelierModalBody">
+                <!-- Spinner de chargement -->
+                <div class="text-center py-5">
+                    <div class="spinner-border" style="color: #d4af37;"></div>
+                    <p class="mt-3 text-muted">Chargement du formulaire...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveAtelierBtn" style="display:none; background-color: #d4af37; border-color: #d4af37;">
+                    <span id="saveText">💾 Enregistrer</span>
+                    <span id="saveSpinner" class="spinner-border spinner-border-sm" style="display:none;"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

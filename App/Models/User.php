@@ -209,4 +209,35 @@ class User extends DbConnect
         }
         return $users;
     }
+
+    /**
+ * Recherche d'utilisateurs par nom, email ou rôle = MOTEUR DE RECHERCHE
+ */
+public function search(string $query = '', string $role = ''): array
+{
+    $sql = "SELECT u.*, r.name as role_name
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            WHERE 1=1";
+    
+    $bindings = [];
+    
+    // Filtre par query (nom OU email)
+    if ($query !== '') {
+        $sql .= " AND (u.username LIKE :query OR u.email LIKE :query)";
+        $bindings[':query'] = '%' . $query . '%';
+    }
+    
+    // Filtre par rôle
+    if ($role !== '') {
+        $sql .= " AND r.name = :role";
+        $bindings[':role'] = $role;
+    }
+    
+    $sql .= " ORDER BY u.created_at DESC";
+    
+    $data = $this->fetchAll($sql, $bindings);
+    
+    return $this->toEntities($data);
+}
 }
